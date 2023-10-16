@@ -1,0 +1,32 @@
+name: Publish sdk-js to NPM Packages
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@main
+
+      - name: setup npm
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: ⬇️ Installing dependencies
+        run: npm i
+
+      - name: 🧐 Testing package
+        run: echo "TODO"
+
+      - name: 📦 deploy to npm
+        run: |
+          npm run build
+          npm ci
+          npm publish --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,48 @@
+{
+  "name": "@nopwdio/sdk-js",
+  "version": "0.0.1",
+  "license": "MIT",
+  "contributors": [
+    "Adrien Pinet"
+  ],
+  "description": "Nopwd JS SDK",
+  "keywords": [
+    "passwordless",
+    "magic-link",
+    "nopwd",
+    "webauthn",
+    "fido",
+    "passkeys"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nopwdio/sdk-js.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "files": [
+    "dist",
+    "cdn"
+  ],
+  "scripts": {
+    "clean": "rm -fr dist cdn",
+    "test": "web-test-runner src/**/*.spec.ts --node-resolve --playwright --browsers webkit",
+    "dev": "cp ./demo/index.html dist && esbuild ./demo/demo-sdk.ts --bundle --outdir=dist --servedir=dist --serve=4321 --watch",
+    "build:cdn": "node ./build.cdn.js",
+    "build:dist": "tsc",
+    "build": "npm run clean && npm run build:cdn && npm run build:dist"
+  },
+  "peerDependencies": {
+    "lit": "^2.8.0"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^3.2.0",
+    "@web/dev-server-esbuild": "^0.4.1",
+    "@web/test-runner": "^0.17.1",
+    "@web/test-runner-playwright": "^0.10.1",
+    "esbuild": "^0.19.2",
+    "typescript": "^5.2.2"
+  },
+  "type": "module"
+}
