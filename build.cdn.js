@@ -12,9 +12,9 @@ esbuild.build({
         "./src/components/np-email-login.ts",
         "./src/components/np-passkey-register.ts",
         "./src/components/np-passkey-login.ts",
-        "./src/flows/email.ts",
-        "./src/flows/webauthn.ts",
-        "./src/flows/token.ts",
+        "./src/core/email.ts",
+        "./src/core/webauthn.ts",
+        "./src/core/token.ts",
     ],
     outdir: "cdn",
     external: [], // empty to ensure deps are bundled

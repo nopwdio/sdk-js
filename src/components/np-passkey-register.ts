@@ -6,8 +6,8 @@ import styles from "./np-passkey-register.styles.js";
 import { loading, warning, checkSolid, fingerprint } from "../internal/styles/icons.styles.js";
 
 import { AbortError, NetworkError, NoPwdError, UnauthorizedError } from "../internal/api/errors.js";
-import { register } from "../flows/webauthn.js";
-import { getPayload } from "../flows/token.js";
+import { register } from "../core/webauthn.js";
+import { getPayload } from "../core/token.js";
 
 export type State =
   | "registering" // registering the passkey

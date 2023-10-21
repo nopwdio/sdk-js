@@ -4,14 +4,14 @@ import { core } from "../internal/styles/core.styles.js";
 import { input } from "../internal/styles/semantic.styles.js";
 import styles from "./np-passkey-login.styles.js";
 
-import { AbortError } from "../flows/errors.js";
+import { AbortError } from "../core/errors.js";
 import {
   getChallenge,
   isWebauthnSupported,
   signChallenge,
   verifySignature,
-} from "../flows/webauthn.js";
-import { TokenPayload, getPayload } from "../flows/token.js";
+} from "../core/webauthn.js";
+import { TokenPayload, getPayload } from "../core/token.js";
 
 export type AuthEvent = {
   access_token: string;

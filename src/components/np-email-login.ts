@@ -4,11 +4,11 @@ import { core } from "../internal/styles/core.styles.js";
 import { button } from "../internal/styles/semantic.styles.js";
 import styles from "./np-email-login.styles.js";
 import { envelope, loading, warning, checkSolid } from "../internal/styles/icons.styles.js";
-import { handleCallbackCode, hasCallbackCode, request } from "../flows/email.js";
-import { AbortError, NetworkError } from "../flows/errors.js";
+import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
+import { AbortError, NetworkError } from "../core/errors.js";
 
-import { TokenPayload, getPayload } from "../flows/token.js";
-import { isWebauthnSupported } from "../flows/webauthn.js";
+import { TokenPayload, getPayload } from "../core/token.js";
+import { isWebauthnSupported } from "../core/webauthn.js";
 
 export type AuthEvent = {
   access_token: string;
