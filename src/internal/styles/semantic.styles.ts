@@ -33,6 +33,28 @@ export const button = css`
   }
 
   :host([state="error"]) {
+    animation: shake 300ms 1 linear;
+  }
+
+  @keyframes shake {
+    0% {
+      -webkit-transform: translate(20px);
+    }
+    20% {
+      -webkit-transform: translate(-20px);
+    }
+    40% {
+      -webkit-transform: translate(10px);
+    }
+    60% {
+      -webkit-transform: translate(-10px);
+    }
+    80% {
+      -webkit-transform: translate(5px);
+    }
+    100% {
+      -webkit-transform: translate(0px);
+    }
   }
 `;
 
