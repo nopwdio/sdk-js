@@ -19,14 +19,22 @@
         padding: 0;
       }
     </style>
-    <!--script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@apinet/nopwd-sdk@0.2.13/cdn/components/np-webauthn-signin.js"
-    ></script-->
-    <script type="module" src="./demo-sdk.js"></script>
+
+    <!--script type="module" src="./demo-sdk.js"></script-->
   </head>
 
   <body>
+    <np-email-login></np-email-login>
     <demo-sdk></demo-sdk>
   </body>
+
+  <script
+    type="module"
+    src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-email-login.js"
+  ></script>
+  <script type="module">
+    await customElements.whenDefined("np-email-login");
+    const button = document.querySelector("np-email-login");
+    button.email = "adrien.pinet@gmail.com";
+  </script>
 </html>
