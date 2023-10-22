@@ -1,7 +1,8 @@
 {
   "name": "@nopwdio/sdk-js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
+  "author": "Adrien Pinet",
   "contributors": [
     "Adrien Pinet"
   ],
