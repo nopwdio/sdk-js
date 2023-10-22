@@ -127,9 +127,6 @@ export class NpPasskeyRegister extends LitElement {
         detail: { kid },
       })
     );
-
-    console.log("created");
-    console.log(kid);
   }
 
   private dispatchErrorEvent(e: NoPwdError) {
