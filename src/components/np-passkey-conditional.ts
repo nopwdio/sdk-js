@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { input } from "../internal/styles/semantic.styles.js";
-import styles from "./np-passkey-register.styles.js";
+import styles from "./np-passkey-conditional.styles.js";
 
 import { AbortError } from "../core/errors.js";
 import {
