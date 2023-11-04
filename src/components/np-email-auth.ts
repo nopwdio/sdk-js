@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { button } from "../internal/styles/semantic.styles.js";
-import styles from "./np-email-login.styles.js";
+import styles from "./np-email-auth.styles.js";
 import { envelope, loading, warning, checkSolid } from "../internal/styles/icons.styles.js";
 import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
 import { AbortError, NetworkError } from "../core/errors.js";
@@ -38,7 +38,7 @@ export type State =
  *
  * @csspart button - The component's button wrapper.
  */
-@customElement("np-email-login")
+@customElement("np-email-auth")
 export class NpEmailLogin extends LitElement {
   /** The component's state. */
   @property({ reflect: true }) state?: State = undefined;
@@ -192,6 +192,6 @@ export class NpEmailLogin extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "np-email-login": NpEmailLogin;
+    "np-email-auth": NpEmailLogin;
   }
 }

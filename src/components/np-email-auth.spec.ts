@@ -1,13 +1,13 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "./np-email-signin";
-import { State, NpEmailLogin } from "./np-email-login";
+import { State, NpEmailLogin } from "./np-email-auth";
 import { MockFetch } from "../api/endpoint.mock";
 
 const sleep = function (ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-describe("np-email-login", () => {
+describe("np-email-auth", () => {
   it("has default inner text to equal", async () => {
     const el: NpEmailLogin = await fixture(html`<np-email-signin></np-email-signin>`);
   });

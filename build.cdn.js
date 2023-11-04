@@ -9,9 +9,9 @@ esbuild.build({
     splitting: true,
     format: "esm",
     entryPoints: [
-        "./src/components/np-email-login.ts",
+        "./src/components/np-email-auth.ts",
         "./src/components/np-passkey-register.ts",
-        "./src/components/np-passkey-login.ts",
+        "./src/components/np-passkey-conditional.ts",
         "./src/core/email.ts",
         "./src/core/webauthn.ts",
         "./src/core/token.ts",

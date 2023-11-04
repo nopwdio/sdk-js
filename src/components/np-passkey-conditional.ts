@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { input } from "../internal/styles/semantic.styles.js";
-import styles from "./np-passkey-login.styles.js";
+import styles from "./np-passkey-register.styles.js";
 
 import { AbortError } from "../core/errors.js";
 import {
@@ -38,8 +38,8 @@ export type State =
  *
  * @csspart input - The component's input wrapper.
  */
-@customElement("np-passkey-login")
-export class NpPasskeyLogin extends LitElement {
+@customElement("np-passkey-conditional")
+export class NpPasskeyConditional extends LitElement {
   /** The component's state. */
   @property({ reflect: true }) state?: State = undefined;
   /** The input's placeholder. */
@@ -49,7 +49,7 @@ export class NpPasskeyLogin extends LitElement {
   /** The input's value. */
   @property() value: string = "";
 
-  @property() resetDuration: number = 2000;
+  @property({ type: Number }) resetDuration: number = 2000;
 
   static styles = [core, input, styles];
 
@@ -181,6 +181,6 @@ export class NpPasskeyLogin extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "np-passkey-login": NpPasskeyLogin;
+    "np-passkey-conditional": NpPasskeyConditional;
   }
 }

@@ -38,7 +38,7 @@ export class NpPasskeyRegister extends LitElement {
   /** The user's access token. */
   @property() token?: string = undefined;
 
-  @property() resetDuration: number = 2000;
+  @property({ type: Number }) resetDuration: number = 2000;
 
   static styles = [core, button, styles];
 
