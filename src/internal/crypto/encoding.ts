@@ -23,5 +23,5 @@ export const decodeFromSafe64 = function (base64: string) {
     .replace(/\-/g, "+") // Convert '-' to '+'
     .replace(/\_/g, "/"); // Convert '_' to '/'
 
-  return atob(base64);
+  return new Uint8Array([...atob(base64)].map((c) => c.charCodeAt(0)));
 };
