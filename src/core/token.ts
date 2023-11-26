@@ -20,7 +20,7 @@ export type TokenPayload = {
   exp: number;
   iat: number;
   iss: string;
-  jti?: string;
+  jti: string;
   amr: string[];
 };
 

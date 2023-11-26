@@ -6,7 +6,7 @@ import {
   TooManyRequestsError,
   UnauthorizedError,
 } from "../internal/api/errors.js";
-import { bufferTo64Safe } from "../internal/crypto/encoding.js";
+import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
 import { sha256 } from "../internal/crypto/hash.js";
 import {
   InvalidSignatureError,
@@ -52,7 +52,7 @@ export const register = async function (token: string, signal?: AbortSignal) {
     const cred = (await navigator.credentials.create({
       signal,
       publicKey: {
-        challenge: new TextEncoder().encode(token),
+        challenge: decodeFromSafe64(payload.jti),
         rp: {
           name: payload.aud,
         },
@@ -78,6 +78,7 @@ export const register = async function (token: string, signal?: AbortSignal) {
       data: {
         client_data: bufferTo64Safe(cred.response.clientDataJSON),
         attestation_object: bufferTo64Safe(cred.response.attestationObject),
+        access_token: token,
       },
       signal,
     })) as { alg: string };
@@ -138,7 +139,7 @@ export const signChallenge = async function (challenge: string, signal?: AbortSi
       signal,
       publicKey: {
         userVerification: "preferred",
-        challenge: new TextEncoder().encode(challenge),
+        challenge: decodeFromSafe64(challenge),
       },
       mediation: "conditional" as CredentialMediationRequirement,
     };
