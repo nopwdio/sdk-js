@@ -138,7 +138,7 @@ export const signChallenge = async function (challenge: string, signal?: AbortSi
     var options: CredentialRequestOptions = {
       signal,
       publicKey: {
-        userVerification: "preferred",
+        userVerification: "required",
         challenge: decodeFromSafe64(challenge),
       },
       mediation: "conditional" as CredentialMediationRequirement,

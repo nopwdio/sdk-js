@@ -54,8 +54,8 @@ export class NpPasskeyRegister extends LitElement {
     this.cancel();
   }
 
-  private onClick() {
-    this.register();
+  private async onClick() {
+    await this.register();
   }
 
   async register() {
