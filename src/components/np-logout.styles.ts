@@ -17,7 +17,7 @@ export default css`
   }
 
   /* button success */
-  :host([state="registered"]) {
+  :host([state="loggedout"]) {
     --button-background-color: var(--np-core-color-green-m);
     --button-text-color: var(--np-core-color-white);
   }

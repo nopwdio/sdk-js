@@ -4,9 +4,12 @@ import { customElement, property } from "lit/decorators.js";
 import "../src/components/np-passkey-conditional.js";
 import "../src/components/np-passkey-register.js";
 import "../src/components/np-email-auth.js";
+import "../src/components/np-logout.js";
+
+import { Session, get, revoke } from "../src/core/session.js";
 
 import styles from "./demo-sdk.styles.js";
-import { NpPasskeyConditional, AuthEvent } from "../src/components/np-passkey-conditional.js";
+import { NpPasskeyConditional } from "../src/components/np-passkey-conditional.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -18,7 +21,7 @@ declare global {
 export class DemoSdk extends LitElement {
   @property() private email: string = "";
   @property() private token: string = "aze";
-  @property({ type: Object }) private auth?: AuthEvent;
+  @property({ type: Object }) private auth?: Session;
 
   static styles = [styles];
 
@@ -27,16 +30,30 @@ export class DemoSdk extends LitElement {
     this.email = input.value;
   }
 
-  private onAuthenticated(e: CustomEvent<AuthEvent>) {
-    this.auth = e.detail;
+  private async onAuthenticated(e: CustomEvent<Session>) {
+    console.log(e.detail);
+  }
+
+  private async onError(e: CustomEvent<Error>) {
+    console.log(e.detail);
+  }
+
+  private async refresh() {
+    console.log(await get());
+  }
+
+  private async revoke() {
+    console.log(await revoke());
   }
 
   render() {
     return html`
-      <div @np:auth=${this.onAuthenticated}>
+      <div @np:session=${this.onAuthenticated} @np:error=${this.onError}>
         <h1>Demo</h1>
+        <button @click=${() => this.refresh()}>refresh</button>
+        <np-logout></np-logout>
         <np-passkey-conditional @input=${this.onInput}></np-passkey-conditional>
-        <np-email-auth email=${this.email}></np-email-auth>
+        <np-email-auth email=${this.email} name="aze" id="aze"></np-email-auth>
         <np-passkey-register token=${this.token}></np-passkey-register>
       </div>
     `;

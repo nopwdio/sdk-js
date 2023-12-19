@@ -2,22 +2,13 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { button } from "../internal/styles/semantic.styles.js";
-import styles from "./np-passkey-register.styles.js";
-import { loading, warning, checkSolid, fingerprint } from "../internal/styles/icons.styles.js";
+import styles from "./np-logout.styles.js";
+import { loading, warning, checkSolid } from "../internal/styles/icons.styles.js";
 
-import { AbortError, NetworkError, NoPwdError, UnauthorizedError } from "../internal/api/errors.js";
-import { register } from "../core/webauthn.js";
-import { get } from "../core/session.js";
+import { AbortError, NoPwdError } from "../internal/api/errors.js";
+import { get, revoke } from "../core/session.js";
 
-export type State =
-  | "busy" // registering the passkey
-  | "registered" // passkey has been registered
-  | "error"; // an error occured
-
-/** Event's detail emitted when a passkey has been created.. */
-export type RegisterEvent = {
-  kid: string; // the access token
-};
+export type State = "busy" | "loggedout" | "error";
 
 /**
  * @summary Creates a Passkey associated with the authenticated user.
@@ -30,8 +21,8 @@ export type RegisterEvent = {
  *
  * @csspart button - The component's button wrapper.
  */
-@customElement("np-passkey-register")
-export class NpPasskeyRegister extends LitElement {
+@customElement("np-logout")
+export class NpLogout extends LitElement {
   /** The component's state. */
   @property({ reflect: true }) state?: State = undefined;
 
@@ -55,27 +46,20 @@ export class NpPasskeyRegister extends LitElement {
   }
 
   private async onClick() {
-    await this.register();
+    await this.logout();
   }
 
-  async register() {
+  async logout() {
     if (this.state) {
       return;
     }
 
     try {
-      const session = await get();
-      if (!session) {
-        throw new Error("you must be authenticated to create a passkey");
-        return;
-      }
-
-      this.abort = new AbortController();
       this.state = "busy";
-      const { id } = await register(session.token, this.abort.signal);
-      this.state = "registered";
-      this.dispatchRegisterEvent(id);
+      await revoke();
+      this.state = "loggedout";
       this.resetState(this.resetDuration);
+      this.dispatchLogoutEvent();
     } catch (e: any) {
       if (e instanceof AbortError) {
         return this.resetState();
@@ -111,13 +95,12 @@ export class NpPasskeyRegister extends LitElement {
     });
   }
 
-  private dispatchRegisterEvent(kid: string) {
+  private dispatchLogoutEvent() {
     this.dispatchEvent(
-      new CustomEvent<RegisterEvent>("np:register", {
+      new CustomEvent("np:logout", {
         composed: true,
         cancelable: true,
         bubbles: true,
-        detail: { kid },
       })
     );
   }
@@ -137,11 +120,11 @@ export class NpPasskeyRegister extends LitElement {
   render() {
     return html` <button @click=${this.onClick} part="button">
       ${!this.state
-        ? html`<slot>${fingerprint} Create a passkey</slot>`
+        ? html`<slot>Logout</slot>`
         : this.state === "busy"
         ? html`<slot name="busy">${loading}</slot>`
-        : this.state === "registered"
-        ? html`<slot name="registered">${checkSolid} passkey created!</slot>`
+        : this.state === "loggedout"
+        ? html`<slot name="loggedout">${checkSolid} Bye!</slot>`
         : html`<slot name="error">${warning} Something went wrong</slot>`}
     </button>`;
   }
@@ -149,6 +132,6 @@ export class NpPasskeyRegister extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "np-passkey-register": NpPasskeyRegister;
+    "np-logout": NpLogout;
   }
 }

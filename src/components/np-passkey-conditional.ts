@@ -11,17 +11,11 @@ import {
   signChallenge,
   verifySignature,
 } from "../core/webauthn.js";
-import { TokenPayload, getPayload } from "../core/token.js";
 
-export type AuthEvent = {
-  access_token: string;
-  access_token_payload: TokenPayload;
-};
+import { Session, create } from "../core/session.js";
 
 export type State =
-  | "initializing" // getting challenge
-  | "authenticating" // waiting user to authenticate
-  | "verifying" // verifying the challenge signature
+  | "busy" // getting challenge
   | "authenticated" // the user is authenticated
   | "error"; // an error occured
 
@@ -78,17 +72,15 @@ export class NpPasskeyConditional extends LitElement {
     try {
       this.abort = new AbortController();
 
-      this.state = "initializing";
+      this.state = "busy";
+
       const { challenge } = await getChallenge(this.abort.signal);
-
-      this.state = "authenticating";
       const authResponse = await signChallenge(challenge, this.abort.signal);
-
-      this.state = "verifying";
       const token = await verifySignature(authResponse, this.abort.signal);
+      const session = await create(token, 24 * 3600);
 
       this.state = "authenticated";
-      await this.dispatchAuthEvent(token, getPayload(token));
+      this.dispatchSessionEvent(session);
       this.resetState(this.resetDuration);
     } catch (e: any) {
       if (e instanceof AbortError) {
@@ -96,8 +88,8 @@ export class NpPasskeyConditional extends LitElement {
       }
 
       this.state = "error";
+      this.dispatchErrorEvent(e);
       this.resetState(this.resetDuration);
-      return this.dispatchErrorEvent(e);
     } finally {
       this.abort = null;
     }
@@ -125,18 +117,13 @@ export class NpPasskeyConditional extends LitElement {
     });
   }
 
-  private async dispatchAuthEvent(access_token: string, access_token_payload: TokenPayload) {
-    await this.updateComplete; // to ensure consistencies
-
+  private dispatchSessionEvent(session: Session) {
     this.dispatchEvent(
-      new CustomEvent<AuthEvent>("np:auth", {
+      new CustomEvent<Session>("np:session", {
         composed: true,
         cancelable: true,
         bubbles: true,
-        detail: {
-          access_token,
-          access_token_payload,
-        },
+        detail: session,
       })
     );
   }

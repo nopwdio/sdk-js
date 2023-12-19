@@ -9,6 +9,7 @@ import { AbortError, NetworkError } from "../core/errors.js";
 
 import { TokenPayload, getPayload } from "../core/token.js";
 import { isWebauthnSupported } from "../core/webauthn.js";
+import { Session, create } from "../core/session.js";
 
 export type AuthEvent = {
   access_token: string;
@@ -17,9 +18,8 @@ export type AuthEvent = {
 };
 
 export type State =
-  | "requesting" // sending an authentication request
+  | "busy" // please wait
   | "requested" // the authentication request has been sent
-  | "verifying" // verifying the authorization link
   | "authenticated" // the user has been authenticated
   | "error"; // An error occured
 
@@ -44,15 +44,22 @@ export class NpEmailLogin extends LitElement {
   @property({ reflect: true }) state?: State = undefined;
   /** The user's email to authenticate. */
   @property() email?: string = undefined;
-  @property() resetDuration: number = 2000;
+  @property({ type: Number }) resetDuration: number = 2000;
 
   static styles = [core, button, styles];
+  static formAssociated = true;
+  private internals = this.attachInternals();
+
+  get form() {
+    return this.internals.form;
+  }
 
   private stateTimeoutId: number | null = null;
   private abort: AbortController | null = null;
 
   async connectedCallback() {
     super.connectedCallback();
+
     this.handleCallbackCodeIfNeeded();
   }
 
@@ -73,7 +80,7 @@ export class NpEmailLogin extends LitElement {
     try {
       this.abort = new AbortController();
 
-      this.state = "requesting";
+      this.state = "busy";
       const expiresAt = await request({ email: this.email || "" }, this.abort.signal);
 
       this.state = "requested";
@@ -98,12 +105,16 @@ export class NpEmailLogin extends LitElement {
     try {
       this.abort = new AbortController();
 
-      this.state = "verifying";
+      this.state = "busy";
       const token = await handleCallbackCode(this.abort.signal);
 
+      // we create the session
+      const session = await create(token, 24 * 3600);
+
       this.state = "authenticated";
-      this.dispatchAuthEvent(token, getPayload(token), await isWebauthnSupported());
       this.resetState(this.resetDuration);
+
+      this.dispatchSessionEvent(session);
     } catch (e: any) {
       if (e instanceof AbortError) {
         return this.resetState();
@@ -140,23 +151,13 @@ export class NpEmailLogin extends LitElement {
     this.stateTimeoutId = window.setTimeout(() => (this.state = undefined), ms);
   }
 
-  private dispatchAuthEvent(
-    access_token: string,
-    access_token_payload: TokenPayload,
-    suggest_passkeys: boolean
-  ) {
-    const authEvent: AuthEvent = {
-      access_token,
-      access_token_payload,
-      suggest_passkeys,
-    };
-
+  private async dispatchSessionEvent(session: Session) {
     this.dispatchEvent(
-      new CustomEvent("np:auth", {
+      new CustomEvent<Session>("np:session", {
         composed: true,
         cancelable: true,
         bubbles: true,
-        detail: authEvent,
+        detail: session,
       })
     );
   }
@@ -177,15 +178,13 @@ export class NpEmailLogin extends LitElement {
     return html` <button @click=${this.onClick} part="button">
       ${!this.state
         ? html`<slot>Passwordless Login</slot>`
-        : this.state === "requesting"
-        ? html`${loading} <slot name="requesting">Sending request...</slot>`
+        : this.state === "busy"
+        ? html` <slot name="busy">${loading}</slot>`
         : this.state === "requested"
-        ? html`${envelope} <slot name="requested">Check your mailbox</slot>`
-        : this.state === "verifying"
-        ? html`${loading} <slot name="verifying">Authorizing...</slot>`
+        ? html`<slot name="requested">${envelope} Check your mailbox</slot>`
         : this.state === "authenticated"
-        ? html`${checkSolid} <slot name="authenticated">Authenticated</slot>`
-        : html`${warning} <slot name="error">Passwordless Login</slot>`}
+        ? html`<slot name="authenticated">${checkSolid} Authenticated</slot>`
+        : html`<slot name="error">${warning} Something went wrong</slot>`}
     </button>`;
   }
 }
