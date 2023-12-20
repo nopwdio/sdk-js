@@ -1,11 +1,11 @@
-import { endpoint } from "../internal/api/endpoint";
-import { ApiError, NetworkError, TooManyRequestsError } from "../internal/api/errors";
-import { generateKey, sign } from "../internal/crypto/ecdsa";
-import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding";
-import { Mutex } from "../internal/util/mutex";
-import { deleteItem, getItem, open, putItem } from "../internal/util/store";
-import { TokenPayload, getPayload } from "./token";
-import { isWebauthnSupported } from "./webauthn";
+import { endpoint } from "../internal/api/endpoint.js";
+import { ApiError, NetworkError, TooManyRequestsError } from "../internal/api/errors.js";
+import { generateKey, sign } from "../internal/crypto/ecdsa.js";
+import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
+import { Mutex } from "../internal/util/mutex.js";
+import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
+import { TokenPayload, getPayload } from "./token.js";
+import { isWebauthnSupported } from "./webauthn.js";
 
 interface SessionObject {
   id: string;
