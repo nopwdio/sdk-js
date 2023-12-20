@@ -11,7 +11,7 @@ export default css`
   }
 
   /* button busy */
-  :host([state="busy"]) {
+  :host([state="registering"]) {
     --button-background-color: transparent;
     --button-text-color: var(--np-core-color-grey-m);
   }

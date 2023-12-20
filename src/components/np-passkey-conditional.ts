@@ -14,21 +14,27 @@ import {
 
 import { Session, create } from "../core/session.js";
 
-export type State =
-  | "busy" // getting challenge
-  | "authenticated" // the user is authenticated
-  | "error"; // an error occured
+export enum State {
+  INITIALIZING = "initializing", // getting challenge
+  WAITING = "waiting", // waiting user to select a passkey
+  VERIFYING = "verifying", // verifying passkey
+  LOGGINGIN = "loggingin", // creating session
+  LOGGEDIN = "loggedin", // session created
+  ERROR = "error", // something went wrong
+}
 
 /**
  * @summary Creates a Passkey associated with the authenticated user.
  *
  * @slot - The default label.
- * @slot initializing - getting challenge from the server.
- * @slot authenticating - User authentication process.
- * @slot verifying - Signature verification.
- * @slot authenticated - Authentication process has been completed.
+ * @slot initializing - getting challenge.
+ * @slot wating - wating user to select a passkey.
+ * @slot verifying - verifying the signature.
+ * @slot loggingin - creating session.
+ * @slot loggedin - session created.
+ * @slot error - Something went wrong.
  *
- * @event np:auth - Emitted when the authentication flow has been completed.
+ * @event np:session - Emitted when the session has been created.
  *
  * @csspart input - The component's input wrapper.
  */
@@ -42,6 +48,9 @@ export class NpPasskeyConditional extends LitElement {
   @property() enterkeyhint: string = "Send";
   /** The input's value. */
   @property() value: string = "";
+
+  @property({ type: Number }) sessionlifetime?: number;
+  @property({ type: Number }) sessionidlelifetime?: number;
 
   @property({ type: Number }) resetDuration: number = 2000;
 
@@ -72,14 +81,19 @@ export class NpPasskeyConditional extends LitElement {
     try {
       this.abort = new AbortController();
 
-      this.state = "busy";
-
+      this.state = State.INITIALIZING;
       const { challenge } = await getChallenge(this.abort.signal);
-      const authResponse = await signChallenge(challenge, this.abort.signal);
-      const token = await verifySignature(authResponse, this.abort.signal);
-      const session = await create(token, 24 * 3600);
 
-      this.state = "authenticated";
+      this.state = State.WAITING;
+      const authResponse = await signChallenge(challenge, this.abort.signal);
+
+      this.state = State.VERIFYING;
+      const token = await verifySignature(authResponse, this.abort.signal);
+
+      this.state = State.LOGGINGIN;
+      const session = await create(token, this.sessionlifetime, this.sessionidlelifetime);
+
+      this.state = State.LOGGEDIN;
       this.dispatchSessionEvent(session);
       this.resetState(this.resetDuration);
     } catch (e: any) {
@@ -87,7 +101,7 @@ export class NpPasskeyConditional extends LitElement {
         return this.resetState();
       }
 
-      this.state = "error";
+      this.state = State.ERROR;
       this.dispatchErrorEvent(e);
       this.resetState(this.resetDuration);
     } finally {
@@ -119,7 +133,7 @@ export class NpPasskeyConditional extends LitElement {
 
   private dispatchSessionEvent(session: Session) {
     this.dispatchEvent(
-      new CustomEvent<Session>("np:session", {
+      new CustomEvent<Session>("np:login", {
         composed: true,
         cancelable: true,
         bubbles: true,

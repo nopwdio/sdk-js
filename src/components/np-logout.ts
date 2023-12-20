@@ -8,16 +8,20 @@ import { loading, warning, checkSolid } from "../internal/styles/icons.styles.js
 import { AbortError, NoPwdError } from "../internal/api/errors.js";
 import { get, revoke } from "../core/session.js";
 
-export type State = "busy" | "loggedout" | "error";
+export enum State {
+  LOGGINGOUT = "loggingout", // revoking session
+  LOGGEDOUT = "loggedout", // session is revoked
+  ERROR = "error", // something went wrong
+}
 
 /**
  * @summary Creates a Passkey associated with the authenticated user.
  *
  * @slot - The default label.
- * @slot registering - the registration of the passkey is in progress.
- * @slot registered - the passkey has been created.
+ * @slot loggingout - revoking the user session.
+ * @slot loggedout - session is revoked.
  *
- * @event np:register - Emitted when the registration flow has been completed.
+ * @event np:loggedout - Emitted when the the session has been revoked.
  *
  * @csspart button - The component's button wrapper.
  */
@@ -55,9 +59,9 @@ export class NpLogout extends LitElement {
     }
 
     try {
-      this.state = "busy";
+      this.state = State.LOGGINGOUT;
       await revoke();
-      this.state = "loggedout";
+      this.state = State.LOGGEDOUT;
       this.resetState(this.resetDuration);
       this.dispatchLogoutEvent();
     } catch (e: any) {
@@ -65,7 +69,7 @@ export class NpLogout extends LitElement {
         return this.resetState();
       }
 
-      this.state = "error";
+      this.state = State.ERROR;
       this.resetState(this.resetDuration);
       this.dispatchErrorEvent(e);
     } finally {
@@ -121,11 +125,11 @@ export class NpLogout extends LitElement {
     return html` <button @click=${this.onClick} part="button">
       ${!this.state
         ? html`<slot>Logout</slot>`
-        : this.state === "busy"
-        ? html`<slot name="busy">${loading}</slot>`
-        : this.state === "loggedout"
-        ? html`<slot name="loggedout">${checkSolid} Bye!</slot>`
-        : html`<slot name="error">${warning} Something went wrong</slot>`}
+        : this.state === State.LOGGINGOUT
+        ? html`${loading}<slot name="loggingout">logging out...</slot>`
+        : this.state === State.LOGGEDOUT
+        ? html`${checkSolid}<slot name="loggedout">Bye!</slot>`
+        : html`${warning}<slot name="error">Something went wrong</slot>`}
     </button>`;
   }
 }

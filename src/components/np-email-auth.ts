@@ -7,33 +7,28 @@ import { envelope, loading, warning, checkSolid } from "../internal/styles/icons
 import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
 import { AbortError, NetworkError } from "../core/errors.js";
 
-import { TokenPayload, getPayload } from "../core/token.js";
-import { isWebauthnSupported } from "../core/webauthn.js";
 import { Session, create } from "../core/session.js";
 
-export type AuthEvent = {
-  access_token: string;
-  access_token_payload: TokenPayload;
-  suggest_passkeys: boolean;
-};
-
-export type State =
-  | "busy" // please wait
-  | "requested" // the authentication request has been sent
-  | "authenticated" // the user has been authenticated
-  | "error"; // An error occured
-
+export enum State {
+  REQUESTING = "requesting", // sending an authentication request
+  REQUESTED = "requested", // the authentication request has been sent
+  VERIFYING = "verifying", // verifying the authorization code
+  LOGGINGIN = "loggingin", // creating the session
+  LOGGEDIN = "loggedin", // session created
+  ERROR = "error", // something went wrong
+}
 /**
  * @summary Creates a Passkey associated with the authenticated user.
  *
  * @slot - the default label.
  * @slot requesting - sending an authentication request
  * @slot requested - the authentication request has been sent
- * @slot verifying - verifying the authorization link
- * @slot authenticated - the user has been authenticated
- * @slot error - Something bad occured.
+ * @slot verifying - verifying the authorization code
+ * @slot loggingin - creating the session
+ * @slot loggedin - session created
+ * @slot error - something went wrong.
  *
- * @event np:auth - Emitted when the authentication flow has been completed.
+ * @event np:login - Emitted when the session has been created.
  * @event np:error - Emitted when an error occured.
  *
  * @csspart button - The component's button wrapper.
@@ -45,6 +40,9 @@ export class NpEmailLogin extends LitElement {
   /** The user's email to authenticate. */
   @property() email?: string = undefined;
   @property({ type: Number }) resetDuration: number = 2000;
+
+  @property({ type: Number }) sessionlifetime?: number;
+  @property({ type: Number }) sessionidlelifetime?: number;
 
   static styles = [core, button, styles];
   static formAssociated = true;
@@ -73,24 +71,24 @@ export class NpEmailLogin extends LitElement {
   }
 
   async login() {
-    if (this.state) {
+    if (this.state && this.email === undefined) {
       return;
     }
 
     try {
       this.abort = new AbortController();
 
-      this.state = "busy";
+      this.state = State.REQUESTING;
       const expiresAt = await request({ email: this.email || "" }, this.abort.signal);
 
-      this.state = "requested";
+      this.state = State.REQUESTED;
       this.resetState(expiresAt * 1000 - Date.now());
     } catch (e: any) {
       if (e instanceof AbortError) {
         return this.resetState();
       }
 
-      this.state = "error";
+      this.state = State.ERROR;
       this.resetState(this.resetDuration);
       this.dispatchErrorEvent(e);
     } finally {
@@ -105,22 +103,22 @@ export class NpEmailLogin extends LitElement {
     try {
       this.abort = new AbortController();
 
-      this.state = "busy";
+      this.state = State.VERIFYING;
       const token = await handleCallbackCode(this.abort.signal);
 
-      // we create the session
-      const session = await create(token, 24 * 3600);
+      this.state = State.LOGGINGIN;
+      const session = await create(token, this.sessionlifetime, this.sessionidlelifetime);
 
-      this.state = "authenticated";
+      this.state = State.LOGGEDIN;
       this.resetState(this.resetDuration);
 
-      this.dispatchSessionEvent(session);
+      this.dispatchLoginEvent(session);
     } catch (e: any) {
       if (e instanceof AbortError) {
         return this.resetState();
       }
 
-      this.state = "error";
+      this.state = State.ERROR;
       this.resetState(this.resetDuration);
       return this.dispatchErrorEvent(e);
     } finally {
@@ -151,9 +149,9 @@ export class NpEmailLogin extends LitElement {
     this.stateTimeoutId = window.setTimeout(() => (this.state = undefined), ms);
   }
 
-  private async dispatchSessionEvent(session: Session) {
+  private async dispatchLoginEvent(session: Session) {
     this.dispatchEvent(
-      new CustomEvent<Session>("np:session", {
+      new CustomEvent<Session>("np:login", {
         composed: true,
         cancelable: true,
         bubbles: true,
@@ -178,13 +176,17 @@ export class NpEmailLogin extends LitElement {
     return html` <button @click=${this.onClick} part="button">
       ${!this.state
         ? html`<slot>Passwordless Login</slot>`
-        : this.state === "busy"
-        ? html` <slot name="busy">${loading}</slot>`
-        : this.state === "requested"
-        ? html`<slot name="requested">${envelope} Check your mailbox</slot>`
-        : this.state === "authenticated"
-        ? html`<slot name="authenticated">${checkSolid} Authenticated</slot>`
-        : html`<slot name="error">${warning} Something went wrong</slot>`}
+        : this.state === State.REQUESTING
+        ? html`${loading} <slot name="requesting">Requesting...</slot>`
+        : this.state === State.REQUESTED
+        ? html`${envelope} <slot name="requested">Check your mailbox</slot>`
+        : this.state === State.VERIFYING
+        ? html`${checkSolid} <slot name="verifying">Please wait...</slot>`
+        : this.state === State.LOGGINGIN
+        ? html`${checkSolid} <slot name="loggingin">Please wait...</slot>`
+        : this.state === State.LOGGEDIN
+        ? html`${checkSolid} <slot name="loggedin">Logged in</slot>`
+        : html`${warning} <slot name="error">Something went wrong</slot>`}
     </button>`;
   }
 }

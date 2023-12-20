@@ -11,7 +11,9 @@ export default css`
   }
 
   /* button busy */
-  :host([state="busy"]) {
+  :host([state="requesting"]),
+  :host([state="loggingin"]),
+  :host([state="verifying"]) {
     --button-background-color: transparent;
     --button-text-color: var(--np-core-color-grey-m);
   }
@@ -23,7 +25,7 @@ export default css`
   }
 
   /* button success */
-  :host([state="authenticated"]) {
+  :host([state="loggedin"]) {
     --button-background-color: var(--np-core-color-green-m);
     --button-text-color: var(--np-core-color-white);
   }

@@ -101,6 +101,12 @@ export const register = async function (token: string, signal?: AbortSignal) {
   }
 };
 
+export const startConditional = async (signal?: AbortSignal) => {
+  const { challenge } = await getChallenge(signal);
+  const authResponse = await signChallenge(challenge, signal);
+  return await verifySignature(authResponse, signal);
+};
+
 export const getChallenge = async (signal?: AbortSignal) => {
   try {
     const { challenge, expires_at } = (await endpoint({

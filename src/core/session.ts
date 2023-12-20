@@ -5,38 +5,45 @@ import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding";
 import { Mutex } from "../internal/util/mutex";
 import { deleteItem, getItem, open, putItem } from "../internal/util/store";
 import { TokenPayload, getPayload } from "./token";
+import { isWebauthnSupported } from "./webauthn";
 
 interface SessionObject {
   id: string;
-  token: string;
   session_id: string;
+
   next_challenge: string;
   private_key: CryptoKeyPair["privateKey"];
+
   created_at: number;
   expires_at: number;
-  refreshed_at: number;
   idle_lifetime: number;
+
+  token: string;
+  refreshed_at: number;
 }
 
 export interface Session {
-  idle_lifetime: number;
-  created_at: number;
-  refreshed_at: number;
-  expires_at: number;
+  created_at: number; // when the session has been created
+  expires_at: number; // the session expiration date
+  idle_lifetime: number; // the session idle lifetime
 
-  token: string;
-  token_payload: TokenPayload;
+  token: string; // the last generated token
+  refreshed_at: number; // when a new token has been generated
+  token_payload: TokenPayload; // its payload
+
+  suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser support it
 }
 
 const getDb = async function () {
   return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
 };
 
-export const create = async function (token: string, lifetime: number, idleLifetime?: number) {
+export const create = async function (token: string, lifetime?: number, idleLifetime?: number) {
   const now = Math.round(Date.now() / 1000);
   const keyPair = await generateKey();
   const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
 
+  lifetime = lifetime ? lifetime : 24 * 60 * 60;
   idleLifetime = idleLifetime ? idleLifetime : lifetime;
 
   const { session_id, next_challenge, idle_lifetime, expires_at } = await endpoint({
@@ -142,7 +149,7 @@ export const revoke = async function () {
   return deleteItem(db, "sessions", "current");
 };
 
-const sessionObjectToSession = function (sessionObject: SessionObject): Session {
+const sessionObjectToSession = async function (sessionObject: SessionObject): Promise<Session> {
   return {
     created_at: sessionObject.created_at,
     expires_at: sessionObject.expires_at,
@@ -151,5 +158,7 @@ const sessionObjectToSession = function (sessionObject: SessionObject): Session 
 
     token: sessionObject.token,
     token_payload: getPayload(sessionObject.token),
+
+    suggest_passkeys: await isWebauthnSupported(),
   };
 };

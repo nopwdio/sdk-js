@@ -9,15 +9,16 @@ import { AbortError, NetworkError, NoPwdError, UnauthorizedError } from "../inte
 import { register } from "../core/webauthn.js";
 import { get } from "../core/session.js";
 
-export type State =
-  | "busy" // registering the passkey
-  | "registered" // passkey has been registered
-  | "error"; // an error occured
+export enum State {
+  REGISTERING = "registering", // registering the passkey
+  REGISTERED = "registered", // passkey has been registered
+  ERROR = "error", // an error occured
+}
 
 /** Event's detail emitted when a passkey has been created.. */
-export type RegisterEvent = {
+export interface RegisterEvent {
   kid: string; // the access token
-};
+}
 
 /**
  * @summary Creates a Passkey associated with the authenticated user.
@@ -34,9 +35,6 @@ export type RegisterEvent = {
 export class NpPasskeyRegister extends LitElement {
   /** The component's state. */
   @property({ reflect: true }) state?: State = undefined;
-
-  /** The user's access token. */
-  @property() token?: string = undefined;
 
   @property({ type: Number }) resetDuration: number = 2000;
 
@@ -71,9 +69,9 @@ export class NpPasskeyRegister extends LitElement {
       }
 
       this.abort = new AbortController();
-      this.state = "busy";
+      this.state = State.REGISTERING;
       const { id } = await register(session.token, this.abort.signal);
-      this.state = "registered";
+      this.state = State.REGISTERED;
       this.dispatchRegisterEvent(id);
       this.resetState(this.resetDuration);
     } catch (e: any) {
@@ -81,9 +79,9 @@ export class NpPasskeyRegister extends LitElement {
         return this.resetState();
       }
 
-      this.state = "error";
-      this.resetState(this.resetDuration);
+      this.state = State.ERROR;
       this.dispatchErrorEvent(e);
+      this.resetState(this.resetDuration);
     } finally {
       this.abort = null;
     }
@@ -135,14 +133,14 @@ export class NpPasskeyRegister extends LitElement {
 
   // Render the UI as a function of component state
   render() {
-    return html` <button @click=${this.onClick} part="button">
+    return html`<button @click=${this.onClick} part="button">
       ${!this.state
-        ? html`<slot>${fingerprint} Create a passkey</slot>`
-        : this.state === "busy"
-        ? html`<slot name="busy">${loading}</slot>`
-        : this.state === "registered"
-        ? html`<slot name="registered">${checkSolid} passkey created!</slot>`
-        : html`<slot name="error">${warning} Something went wrong</slot>`}
+        ? html`${fingerprint}<slot>Create a passkey</slot>`
+        : this.state === State.REGISTERING
+        ? html`${loading}<slot name="busy"></slot>`
+        : this.state === State.REGISTERED
+        ? html`${checkSolid}<slot name="registered">passkey created!</slot>`
+        : html`${warning}<slot name="error">Something went wrong</slot>`}
     </button>`;
   }
 }

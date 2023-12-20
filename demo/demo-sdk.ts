@@ -48,11 +48,14 @@ export class DemoSdk extends LitElement {
 
   render() {
     return html`
-      <div @np:session=${this.onAuthenticated} @np:error=${this.onError}>
+      <div @np:login=${this.onAuthenticated} @np:error=${this.onError}>
         <h1>Demo</h1>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
-        <np-passkey-conditional @input=${this.onInput}></np-passkey-conditional>
+        <np-passkey-conditional
+          @input=${this.onInput}
+          sessionlifetime="3600"
+        ></np-passkey-conditional>
         <np-email-auth email=${this.email} name="aze" id="aze"></np-email-auth>
         <np-passkey-register token=${this.token}></np-passkey-register>
       </div>
