@@ -13,7 +13,6 @@ export enum State {
   REQUESTING = "requesting", // sending an authentication request
   REQUESTED = "requested", // the authentication request has been sent
   VERIFYING = "verifying", // verifying the authorization code
-  LOGGINGIN = "loggingin", // creating the session
   LOGGEDIN = "loggedin", // session created
   ERROR = "error", // something went wrong
 }
@@ -105,8 +104,6 @@ export class NpEmailLogin extends LitElement {
 
       this.state = State.VERIFYING;
       const token = await handleCallbackCode(this.abort.signal);
-
-      this.state = State.LOGGINGIN;
       const session = await create(token, this.sessionlifetime, this.sessionidlelifetime);
 
       this.state = State.LOGGEDIN;
@@ -181,9 +178,7 @@ export class NpEmailLogin extends LitElement {
         : this.state === State.REQUESTED
         ? html`${envelope} <slot name="requested">Check your mailbox</slot>`
         : this.state === State.VERIFYING
-        ? html`${checkSolid} <slot name="verifying">Please wait...</slot>`
-        : this.state === State.LOGGINGIN
-        ? html`${checkSolid} <slot name="loggingin">Please wait...</slot>`
+        ? html`${loading} <slot name="verifying">Please wait...</slot>`
         : this.state === State.LOGGEDIN
         ? html`${checkSolid} <slot name="loggedin">Logged in</slot>`
         : html`${warning} <slot name="error">Something went wrong</slot>`}

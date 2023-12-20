@@ -18,7 +18,6 @@ export enum State {
   INITIALIZING = "initializing", // getting challenge
   WAITING = "waiting", // waiting user to select a passkey
   VERIFYING = "verifying", // verifying passkey
-  LOGGINGIN = "loggingin", // creating session
   LOGGEDIN = "loggedin", // session created
   ERROR = "error", // something went wrong
 }
@@ -89,8 +88,6 @@ export class NpPasskeyConditional extends LitElement {
 
       this.state = State.VERIFYING;
       const token = await verifySignature(authResponse, this.abort.signal);
-
-      this.state = State.LOGGINGIN;
       const session = await create(token, this.sessionlifetime, this.sessionidlelifetime);
 
       this.state = State.LOGGEDIN;

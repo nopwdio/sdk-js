@@ -137,9 +137,9 @@ export class NpPasskeyRegister extends LitElement {
       ${!this.state
         ? html`${fingerprint}<slot>Create a passkey</slot>`
         : this.state === State.REGISTERING
-        ? html`${loading}<slot name="busy"></slot>`
+        ? html`${loading}<slot name="registering">Creating...</slot>`
         : this.state === State.REGISTERED
-        ? html`${checkSolid}<slot name="registered">passkey created!</slot>`
+        ? html`${checkSolid}<slot name="registered">Passkey created!</slot>`
         : html`${warning}<slot name="error">Something went wrong</slot>`}
     </button>`;
   }
