@@ -150,6 +150,9 @@ export const revoke = async function () {
 };
 
 const sessionObjectToSession = async function (sessionObject: SessionObject): Promise<Session> {
+  const jwt = getPayload(sessionObject.token);
+  const webauthnSupported = await isWebauthnSupported();
+
   return {
     created_at: sessionObject.created_at,
     expires_at: sessionObject.expires_at,
@@ -157,8 +160,8 @@ const sessionObjectToSession = async function (sessionObject: SessionObject): Pr
     idle_lifetime: sessionObject.idle_lifetime,
 
     token: sessionObject.token,
-    token_payload: getPayload(sessionObject.token),
+    token_payload: jwt,
 
-    suggest_passkeys: await isWebauthnSupported(),
+    suggest_passkeys: webauthnSupported && !jwt.amr.includes("webauthn"),
   };
 };
