@@ -16,7 +16,7 @@ interface SessionObject {
 
   created_at: number;
   expires_at: number;
-  idle_lifetime: number;
+  idle_timeout: number;
 
   token: string;
   refreshed_at: number;
@@ -25,7 +25,7 @@ interface SessionObject {
 export interface Session {
   created_at: number; // when the session has been created
   expires_at: number; // the session expiration date
-  idle_lifetime: number; // the session idle lifetime
+  idle_timeout: number; // the session idle lifetime
 
   token: string; // the last generated token
   refreshed_at: number; // when a new token has been generated
@@ -46,7 +46,7 @@ export const create = async function (token: string, lifetime?: number, idleLife
   lifetime = lifetime ? lifetime : 24 * 60 * 60;
   idleLifetime = idleLifetime ? idleLifetime : lifetime;
 
-  const { session_id, next_challenge, idle_lifetime, expires_at } = await endpoint({
+  const { session_id, next_challenge, idle_timeout, expires_at } = await endpoint({
     method: "POST",
     ressource: "/sessions",
     data: {
@@ -68,7 +68,7 @@ export const create = async function (token: string, lifetime?: number, idleLife
     refreshed_at: now,
     created_at: now,
     expires_at: expires_at,
-    idle_lifetime: idle_lifetime,
+    idle_timeout: idle_timeout,
   };
 
   await putItem<SessionObject>(db, "sessions", sessionObject);
@@ -156,8 +156,9 @@ const sessionObjectToSession = async function (sessionObject: SessionObject): Pr
   return {
     created_at: sessionObject.created_at,
     expires_at: sessionObject.expires_at,
+
     refreshed_at: sessionObject.refreshed_at,
-    idle_lifetime: sessionObject.idle_lifetime,
+    idle_timeout: sessionObject.idle_timeout,
 
     token: sessionObject.token,
     token_payload: jwt,

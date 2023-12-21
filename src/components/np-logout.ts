@@ -21,7 +21,8 @@ export enum State {
  * @slot loggingout - revoking the user session.
  * @slot loggedout - session is revoked.
  *
- * @event np:loggedout - Emitted when the the session has been revoked.
+ * @event np:logout - Emitted when the the session has been revoked.
+ * @event np:error - Emitted when an error occured.
  *
  * @csspart button - The component's button wrapper.
  */

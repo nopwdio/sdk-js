@@ -33,7 +33,8 @@ export enum State {
  * @slot loggedin - session created.
  * @slot error - Something went wrong.
  *
- * @event np:session - Emitted when the session has been created.
+ * @event np:login - Emitted when the session has been created.
+ * @event np:error - Emitted when an error occured.
  *
  * @csspart input - The component's input wrapper.
  */
@@ -49,7 +50,7 @@ export class NpPasskeyConditional extends LitElement {
   @property() value: string = "";
 
   @property({ type: Number }) sessionlifetime?: number;
-  @property({ type: Number }) sessionidlelifetime?: number;
+  @property({ type: Number }) sessionidletimeout?: number;
 
   @property({ type: Number }) resetDuration: number = 2000;
 
@@ -88,7 +89,7 @@ export class NpPasskeyConditional extends LitElement {
 
       this.state = State.VERIFYING;
       const token = await verifySignature(authResponse, this.abort.signal);
-      const session = await create(token, this.sessionlifetime, this.sessionidlelifetime);
+      const session = await create(token, this.sessionlifetime, this.sessionidletimeout);
 
       this.state = State.LOGGEDIN;
       this.dispatchSessionEvent(session);

@@ -28,6 +28,7 @@ export interface RegisterEvent {
  * @slot registered - the passkey has been created.
  *
  * @event np:register - Emitted when the registration flow has been completed.
+ * @event np:error - Emitted when an error occured.
  *
  * @csspart button - The component's button wrapper.
  */
