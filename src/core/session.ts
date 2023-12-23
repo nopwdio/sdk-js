@@ -4,6 +4,7 @@ import { generateKey, sign } from "../internal/crypto/ecdsa.js";
 import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
 import { Mutex } from "../internal/util/mutex.js";
 import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
+import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
 
@@ -38,20 +39,20 @@ const getDb = async function () {
   return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
 };
 
-export const create = async function (token: string, lifetime?: number, idleLifetime?: number) {
+export const create = async function (token: string, lifetime?: number, idleTimeout?: number) {
   const now = Math.round(Date.now() / 1000);
   const keyPair = await generateKey();
   const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
 
   lifetime = lifetime ? lifetime : 24 * 60 * 60;
-  idleLifetime = idleLifetime ? idleLifetime : lifetime;
+  idleTimeout = idleTimeout ? idleTimeout : lifetime;
 
   const { session_id, next_challenge, idle_timeout, expires_at } = await endpoint({
     method: "POST",
     ressource: "/sessions",
     data: {
       public_key: publicKey,
-      idle_lifetime: idleLifetime,
+      idle_timeout: idleTimeout,
       lifetime: lifetime,
       access_token: token,
     },
@@ -127,26 +128,27 @@ export const get = async function (): Promise<Session | null> {
 
 export const revoke = async function () {
   const db = await getDb();
-  const currentSession = await getItem<SessionObject>(db, "sessions", "current");
-
-  if (!currentSession) {
-    return;
-  }
 
   try {
+    const currentSession = await getItem<SessionObject>(db, "sessions", "current");
+
+    if (!currentSession) {
+      return;
+    }
+
     await endpoint({
       method: "DELETE",
       ressource: `/sessions/${currentSession.session_id}`,
     });
-  } catch (e) {
+  } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError) {
       throw e;
     }
 
-    console.log(e);
+    throw new UnexpectedError(e);
+  } finally {
+    return deleteItem(db, "sessions", "current");
   }
-
-  return deleteItem(db, "sessions", "current");
 };
 
 const sessionObjectToSession = async function (sessionObject: SessionObject): Promise<Session> {
