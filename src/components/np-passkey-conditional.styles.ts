@@ -10,6 +10,18 @@ export default css`
     --input-background-color: transparent;
     --input-border-color: var(--np-core-color-grey-l);
   }
+  :host([state="verifying"]) :is(input, input:focus, input:hover) {
+    animation: blink 200ms ease-out infinite alternate;
+  }
+
+  @keyframes blink {
+    0% {
+      border-color: var(--np-core-color-grey-l);
+    }
+    100% {
+      border-color: var(--np-core-color-grey-s);
+    }
+  }
 
   input:hover {
     --input-border-color: var(--np-core-color-grey-m);
