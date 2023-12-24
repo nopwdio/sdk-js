@@ -43,6 +43,10 @@ export class NpLogout extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+
+    if ((await get()) === null) {
+      this.dispatchLogoutEvent();
+    }
   }
 
   async disconnectedCallback() {

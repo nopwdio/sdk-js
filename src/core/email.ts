@@ -22,12 +22,15 @@ import {
  * @param params the authentication request parameters
  * @param params.email the user's email to authenticate
  * @param signal a way to abord the request (clientside) if needed
+ *
  * @returns the request expiration date (posix)
+ *
  * @throws {AbortError} when the authentication flow has been canceled (using signal)
  * @throws {MissingEmailError} when the email parameter is missing
  * @throws {InvalidEmailError} when the email parameter is malformed
  * @throws {QuotaError} when too many auth attempts have been made
  * @throws {UnexpectedError} when an unexpected error occured
+ * @throws {NetworkError} when a connection error occured
  */
 export const request = async (
   params: {
@@ -84,7 +87,9 @@ export const hasCallbackCode = function () {
 /**
  * Exchange the authorization code in the url to an access token
  * The authorization code will be removed from the url
+ *
  * @returns the access token
+ *
  * @throws {AbortError} when the authentication flow has been canceled (using signal)
  * @throws {NetworkError} when a connection error occured
  * @throws {MissingCodeParameterError} when the code parameter is missing

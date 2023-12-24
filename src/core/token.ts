@@ -25,10 +25,18 @@ export type TokenPayload = {
 };
 
 /**
- * Checks if the token is valid.
- * Important: make sure to verify the "aud" claim matches your domain.
- * @returns the jwt payload.
+ * Checks if the token is valid and returns its payload.
+ * Important: make sure to verify the "aud" claim matches your own domain.
+ * @param token the access token to verify
+ * @param signal a way to abord the request (clientside) if needed
+ * @returns the jwt's payload (if valid)
+ * @throws {AbortError} when the authentication flow has been canceled (using signal)
+ * @throws {MissingTokenError} if the token is not defined
+ * @throws {NetworkError} when a connection error occured
+ * @throws {InvalidTokenError} when the access token is malformed or expired
+ * @throws {UnexpectedError} when an unexpected error occured
  */
+
 export const verify = async (token: string, signal?: AbortSignal) => {
   try {
     if (!token) {
@@ -41,39 +49,6 @@ export const verify = async (token: string, signal?: AbortSignal) => {
     })) as TokenPayload;
 
     return jwt;
-  } catch (e: any) {
-    if (e instanceof AbortError || e instanceof NetworkError || e instanceof MissingTokenError) {
-      throw e;
-    }
-
-    if (
-      e instanceof BadRequestError ||
-      e instanceof NotFoundError ||
-      e instanceof UnauthorizedError ||
-      e instanceof ForbiddenError
-    ) {
-      throw new InvalidTokenError();
-    }
-
-    throw new UnexpectedError(e);
-  }
-};
-
-/**
- * Revokes an access token.
- * All subsequent 'verify' calls will returns an error
- */
-export const revoke = async (token: string, signal?: AbortSignal) => {
-  try {
-    if (!token) {
-      throw new MissingTokenError();
-    }
-
-    await endpoint({
-      method: "DELETE",
-      ressource: `/tokens/${token}`,
-      signal,
-    });
   } catch (e: any) {
     if (e instanceof AbortError || e instanceof NetworkError || e instanceof MissingTokenError) {
       throw e;
