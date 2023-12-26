@@ -2,6 +2,7 @@ import { endpoint } from "../internal/api/endpoint.js";
 import { AbortError, NetworkError, TooManyRequestsError } from "../internal/api/errors.js";
 import { generateKey, sign } from "../internal/crypto/ecdsa.js";
 import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
+
 import { Mutex } from "../internal/util/mutex.js";
 import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
 import { UnexpectedError } from "./errors.js";
@@ -87,7 +88,11 @@ export const create = async function (token: string, lifetime?: number, idleTime
     };
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
-    return sessionObjectToSession(sessionObject);
+    //localStorage.setItem("nopwd:session:activity", `${now}`);
+
+    const session = await sessionObjectToSession(sessionObject);
+
+    return session;
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
       throw e;
@@ -133,6 +138,7 @@ export const get = async function (): Promise<Session | null> {
     currentSession.refreshed_at = now;
 
     await putItem(db, "sessions", currentSession);
+    localStorage.setItem("nopwd:session:activity", `${now}`);
     return sessionObjectToSession(currentSession);
   } catch (e) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
@@ -141,6 +147,8 @@ export const get = async function (): Promise<Session | null> {
 
     const db = await getNopwdDb();
     await deleteItem(db, "sessions", "current");
+    //localStorage.removeItem("nopwd:session:activity");
+
     return null;
   } finally {
     unlock();
@@ -168,7 +176,8 @@ export const revoke = async function () {
 
     throw new UnexpectedError(e);
   } finally {
-    return deleteItem(db, "sessions", "current");
+    await deleteItem(db, "sessions", "current");
+    //localStorage.removeItem("nopwd:session:activity");
   }
 };
 

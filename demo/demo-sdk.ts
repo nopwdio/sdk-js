@@ -38,6 +38,10 @@ export class DemoSdk extends LitElement {
     console.log(e.detail);
   }
 
+  private async onLogout(e: CustomEvent) {
+    console.log("logout");
+  }
+
   private async refresh() {
     console.log(await get());
   }
@@ -48,7 +52,7 @@ export class DemoSdk extends LitElement {
 
   render() {
     return html`
-      <div @np:login=${this.onAuthenticated} @np:error=${this.onError}>
+      <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>

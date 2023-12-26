@@ -43,8 +43,9 @@ export class NpLogout extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+    const session = await get();
 
-    if ((await get()) === null) {
+    if (session === null) {
       this.dispatchLogoutEvent();
     }
   }
