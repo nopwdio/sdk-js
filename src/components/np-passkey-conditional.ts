@@ -49,8 +49,8 @@ export class NpPasskeyConditional extends LitElement {
   /** The input's value. */
   @property() value: string = "";
 
-  @property({ type: Number }) sessionlifetime?: number;
-  @property({ type: Number }) sessionidletimeout?: number;
+  @property({ type: Number }) lifetime?: number;
+  @property({ type: Number }) idletimeout?: number;
 
   @property({ type: Number }) resetDuration: number = 2000;
 
@@ -97,7 +97,7 @@ export class NpPasskeyConditional extends LitElement {
 
       this.state = State.VERIFYING;
       const token = await verifySignature(authResponse, this.abort.signal);
-      const session = await create(token, this.sessionlifetime, this.sessionidletimeout);
+      const session = await create(token, this.lifetime, this.idletimeout);
 
       this.state = State.LOGGEDIN;
       this.dispatchLoginEvent(session);

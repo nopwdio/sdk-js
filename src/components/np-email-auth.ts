@@ -40,8 +40,8 @@ export class NpEmailLogin extends LitElement {
   @property() email?: string = undefined;
   @property({ type: Number }) resetDuration: number = 2000;
 
-  @property({ type: Number }) sessionlifetime?: number;
-  @property({ type: Number }) sessionidletimeout?: number;
+  @property({ type: Number }) lifetime?: number;
+  @property({ type: Number }) idletimeout?: number;
 
   static styles = [core, button, styles];
   static formAssociated = true;
@@ -111,7 +111,7 @@ export class NpEmailLogin extends LitElement {
 
       this.state = State.VERIFYING;
       const token = await handleCallbackCode(this.abort.signal);
-      const session = await create(token, this.sessionlifetime, this.sessionidletimeout);
+      const session = await create(token, this.lifetime, this.idletimeout);
 
       this.state = State.LOGGEDIN;
       this.resetState(this.resetDuration);
