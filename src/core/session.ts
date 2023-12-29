@@ -9,6 +9,7 @@ import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
 
+// Internal indexeddb session object
 interface SessionObject {
   id: string;
   session_id: string;

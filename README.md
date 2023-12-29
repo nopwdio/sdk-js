@@ -1,9 +1,9 @@
 # Nopwd javascript sdk
 
-To all who come here: welcome!
+To all who come here... welcome!
 
 This is the repo for our javascript sdk.
-This repo contains all the source code we use to build our js lib.
+This repo contains all the source code we use to build our js library.
 
 ## What is it?
 
