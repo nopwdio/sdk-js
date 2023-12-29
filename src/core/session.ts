@@ -104,7 +104,7 @@ export const create = async function (token: string, lifetime?: number, idleTime
 
 const mutex = new Mutex();
 
-export const get = async function (): Promise<Session | null> {
+export const get = async function (refreshToken: boolean = true): Promise<Session | null> {
   const unlock = await mutex.lock();
 
   try {
@@ -114,6 +114,17 @@ export const get = async function (): Promise<Session | null> {
 
     if (!currentSession) {
       return null;
+    }
+
+    if (
+      currentSession.expires_at < now ||
+      currentSession.refreshed_at + currentSession.idle_timeout < now
+    ) {
+      throw new Error("expired session");
+    }
+
+    if (!refreshToken) {
+      return sessionObjectToSession(currentSession);
     }
 
     const jwt = getPayload(currentSession.token);

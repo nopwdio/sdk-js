@@ -34,9 +34,8 @@ export class NpLogout extends LitElement {
   /** The user's access token. */
   @property() token?: string = undefined;
 
+  /** The reset state duration after success or error */
   @property({ type: Number }) resetDuration: number = 2000;
-
-  static styles = [core, button, styles];
 
   private stateTimeoutId: number | null = null;
   private abort: AbortController | null = null;
@@ -138,6 +137,8 @@ export class NpLogout extends LitElement {
         : html`${warning}<slot name="error">Something went wrong</slot>`}
     </button>`;
   }
+
+  static styles = [core, button, styles];
 }
 
 declare global {
