@@ -12,7 +12,7 @@ import {
   verifySignature,
 } from "../core/webauthn.js";
 
-import { Session, create, get } from "../core/session.js";
+import { Session, create } from "../core/session.js";
 
 export enum State {
   INITIALIZING = "initializing", // getting challenge
@@ -61,14 +61,6 @@ export class NpPasskeyConditional extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-
-    const session = await get();
-
-    if (session) {
-      this.dispatchLoginEvent(session);
-      return;
-    }
-
     this.startConditional();
   }
 
