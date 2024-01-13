@@ -159,7 +159,8 @@ export const get = async function (): Promise<Session | null> {
       idle_timeout: currentSession.idle_timeout,
       token: currentToken,
       token_payload: getPayload(currentToken),
-      suggest_passkeys: await isWebauthnSupported(),
+      suggest_passkeys:
+        (await isWebauthnSupported()) && !getPayload(currentToken).amr.includes("webauthn"),
     };
   } catch (e) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
