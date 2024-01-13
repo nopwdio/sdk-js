@@ -9,6 +9,9 @@ import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
 
+let currentToken: string | null = null;
+let refreshMutex = new Mutex();
+
 // Internal indexeddb session object
 interface SessionObject {
   id: string;
@@ -19,20 +22,18 @@ interface SessionObject {
 
   created_at: number;
   expires_at: number;
+  used_at: number;
   idle_timeout: number;
-
-  token: string;
-  refreshed_at: number;
 }
 
 export interface Session {
   created_at: number; // when the session has been created
   expires_at: number; // the session expiration date
+  used_at: number; // when a new token has been generated
   idle_timeout: number; // the session idle lifetime
 
-  token: string; // the last generated token
-  refreshed_at: number; // when a new token has been generated
-  token_payload: TokenPayload; // its payload
+  token: string;
+  token_payload: TokenPayload;
 
   suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser support it
 }
@@ -54,7 +55,11 @@ const getNopwdDb = async function () {
  * @throws {InvalidTokenError} when the access token is malformed or expired
  */
 
-export const create = async function (token: string, lifetime?: number, idleTimeout?: number) {
+export const create = async function (
+  token: string,
+  lifetime?: number,
+  idleTimeout?: number
+): Promise<Session> {
   try {
     const now = Math.round(Date.now() / 1000);
     const keyPair = await generateKey();
@@ -78,11 +83,10 @@ export const create = async function (token: string, lifetime?: number, idleTime
 
     const sessionObject: SessionObject = {
       id: "current",
-      token: token,
       session_id,
       next_challenge,
       private_key: keyPair.privateKey,
-      refreshed_at: now,
+      used_at: now,
       created_at: now,
       expires_at: expires_at,
       idle_timeout: idle_timeout,
@@ -90,10 +94,17 @@ export const create = async function (token: string, lifetime?: number, idleTime
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
     //localStorage.setItem("nopwd:session:activity", `${now}`);
+    currentToken = token;
 
-    const session = await sessionObjectToSession(sessionObject);
-
-    return session;
+    return {
+      used_at: now,
+      created_at: now,
+      expires_at: expires_at,
+      idle_timeout: idle_timeout,
+      token: token,
+      token_payload: getPayload(token),
+      suggest_passkeys: await isWebauthnSupported(),
+    };
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
       throw e;
@@ -103,10 +114,8 @@ export const create = async function (token: string, lifetime?: number, idleTime
   }
 };
 
-const mutex = new Mutex();
-
-export const get = async function (refreshToken: boolean = true): Promise<Session | null> {
-  const unlock = await mutex.lock();
+export const get = async function (): Promise<Session | null> {
+  const unlock = await refreshMutex.lock();
 
   try {
     const now = Math.round(Date.now() / 1000);
@@ -119,39 +128,39 @@ export const get = async function (refreshToken: boolean = true): Promise<Sessio
 
     if (
       currentSession.expires_at < now ||
-      currentSession.refreshed_at + currentSession.idle_timeout < now
+      currentSession.used_at + currentSession.idle_timeout < now
     ) {
-      throw new Error("expired session");
+      throw new Error("expired session"); // go to catch
     }
 
-    if (!refreshToken) {
-      return sessionObjectToSession(currentSession);
+    if (currentToken == null || getPayload(currentToken).exp - 60 <= now) {
+      const challenge = decodeFromSafe64(currentSession.next_challenge);
+      const signature = await sign(challenge, currentSession.private_key);
+
+      const { access_token, next_challenge } = await endpoint({
+        method: "POST",
+        ressource: `/sessions/${currentSession.session_id}/tokens`,
+        data: {
+          signature: bufferTo64Safe(signature),
+        },
+      });
+
+      currentSession.next_challenge = next_challenge;
+      currentSession.used_at = now;
+      await putItem(db, "sessions", currentSession);
+
+      currentToken = access_token as string;
     }
 
-    const jwt = getPayload(currentSession.token);
-
-    if (now <= jwt.exp - 60) {
-      return sessionObjectToSession(currentSession);
-    }
-
-    const challenge = decodeFromSafe64(currentSession.next_challenge);
-    const signature = await sign(challenge, currentSession.private_key);
-
-    const { access_token, next_challenge } = await endpoint({
-      method: "POST",
-      ressource: `/sessions/${currentSession.session_id}/tokens`,
-      data: {
-        signature: bufferTo64Safe(signature),
-      },
-    });
-
-    currentSession.token = access_token;
-    currentSession.next_challenge = next_challenge;
-    currentSession.refreshed_at = now;
-
-    await putItem(db, "sessions", currentSession);
-    localStorage.setItem("nopwd:session:activity", `${now}`);
-    return sessionObjectToSession(currentSession);
+    return {
+      used_at: now,
+      created_at: now,
+      expires_at: currentSession.expires_at,
+      idle_timeout: currentSession.idle_timeout,
+      token: currentToken,
+      token_payload: getPayload(currentToken),
+      suggest_passkeys: await isWebauthnSupported(),
+    };
   } catch (e) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
       throw e;
@@ -191,22 +200,4 @@ export const revoke = async function () {
     await deleteItem(db, "sessions", "current");
     //localStorage.removeItem("nopwd:session:activity");
   }
-};
-
-const sessionObjectToSession = async function (sessionObject: SessionObject): Promise<Session> {
-  const jwt = getPayload(sessionObject.token);
-  const webauthnSupported = await isWebauthnSupported();
-
-  return {
-    created_at: sessionObject.created_at,
-    expires_at: sessionObject.expires_at,
-
-    refreshed_at: sessionObject.refreshed_at,
-    idle_timeout: sessionObject.idle_timeout,
-
-    token: sessionObject.token,
-    token_payload: jwt,
-
-    suggest_passkeys: webauthnSupported && !jwt.amr.includes("webauthn"),
-  };
 };

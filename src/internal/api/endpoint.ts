@@ -10,7 +10,7 @@ import {
   UnauthorizedError,
 } from "./errors.js";
 
-const API_BASE = "https://api.nopwd.io/v1";
+const API_BASE = "https://api.nopwd.io/v0";
 
 export interface Params {
   method: string; // GET, POST, PUT, DELETE
