@@ -3,14 +3,10 @@ import { AbortError, NetworkError, TooManyRequestsError } from "../internal/api/
 import { generateKey, sign } from "../internal/crypto/ecdsa.js";
 import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
 
-import { Mutex } from "../internal/util/mutex.js";
 import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
 import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
-
-let currentToken: string | null = null;
-let refreshMutex = new Mutex();
 
 // Internal indexeddb session object
 interface SessionObject {
@@ -21,6 +17,7 @@ interface SessionObject {
   private_key: CryptoKeyPair["privateKey"];
 
   created_at: number;
+  created_with: string[];
   expires_at: number;
   used_at: number;
   idle_timeout: number;
@@ -28,6 +25,7 @@ interface SessionObject {
 
 export interface Session {
   created_at: number; // when the session has been created
+  created_with: string[];
   expires_at: number; // the session expiration date
   used_at: number; // when a new token has been generated
   idle_timeout: number; // the session idle lifetime
@@ -59,7 +57,7 @@ export const create = async function (
   token: string,
   lifetime?: number,
   idleTimeout?: number
-): Promise<Session> {
+): Promise<Session | null> {
   try {
     const now = Math.round(Date.now() / 1000);
     const keyPair = await generateKey();
@@ -68,7 +66,16 @@ export const create = async function (
     lifetime = lifetime ? lifetime : 24 * 60 * 60;
     idleTimeout = idleTimeout ? idleTimeout : lifetime;
 
-    const { session_id, next_challenge, idle_timeout, expires_at } = await endpoint({
+    const {
+      session_id,
+      access_token,
+      next_challenge,
+      idle_timeout,
+      expires_at,
+      created_at,
+      created_with,
+      used_at,
+    } = await endpoint({
       method: "POST",
       ressource: "/sessions",
       data: {
@@ -88,23 +95,28 @@ export const create = async function (
       private_key: keyPair.privateKey,
       used_at: now,
       created_at: now,
+      created_with: created_with,
       expires_at: expires_at,
       idle_timeout: idle_timeout,
     };
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
-    //localStorage.setItem("nopwd:session:activity", `${now}`);
-    currentToken = token;
 
-    return {
-      used_at: now,
-      created_at: now,
+    pAccessToken = Promise.resolve({
+      token: access_token,
+      token_payload: getPayload(access_token),
+
+      created_at: created_at,
+      created_with: created_with,
+
       expires_at: expires_at,
       idle_timeout: idle_timeout,
-      token: token,
-      token_payload: getPayload(token),
-      suggest_passkeys: await isWebauthnSupported(),
-    };
+      used_at: used_at,
+
+      suggest_passkeys: (await isWebauthnSupported()) && !created_with.includes("webauthn"),
+    });
+
+    return pAccessToken;
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
       throw e;
@@ -115,66 +127,25 @@ export const create = async function (
 };
 
 export const get = async function (): Promise<Session | null> {
-  const unlock = await refreshMutex.lock();
+  const now = Math.round(Date.now() / 1000);
+  const session = await pAccessToken;
 
-  try {
-    const now = Math.round(Date.now() / 1000);
-    const db = await getNopwdDb();
-    const currentSession = await getItem<SessionObject>(db, "sessions", "current");
-
-    if (!currentSession) {
-      return null;
-    }
-
-    if (
-      currentSession.expires_at < now ||
-      currentSession.used_at + currentSession.idle_timeout < now
-    ) {
-      throw new Error("expired session"); // go to catch
-    }
-
-    if (currentToken == null || getPayload(currentToken).exp - 60 <= now) {
-      const challenge = decodeFromSafe64(currentSession.next_challenge);
-      const signature = await sign(challenge, currentSession.private_key);
-
-      const { access_token, next_challenge } = await endpoint({
-        method: "POST",
-        ressource: `/sessions/${currentSession.session_id}/tokens`,
-        data: {
-          signature: bufferTo64Safe(signature),
-        },
-      });
-
-      currentSession.next_challenge = next_challenge;
-      currentSession.used_at = now;
-      await putItem(db, "sessions", currentSession);
-
-      currentToken = access_token as string;
-    }
-
-    return {
-      used_at: now,
-      created_at: now,
-      expires_at: currentSession.expires_at,
-      idle_timeout: currentSession.idle_timeout,
-      token: currentToken,
-      token_payload: getPayload(currentToken),
-      suggest_passkeys:
-        (await isWebauthnSupported()) && !getPayload(currentToken).amr.includes("webauthn"),
-    };
-  } catch (e) {
-    if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
-      throw e;
-    }
-
-    const db = await getNopwdDb();
-    await deleteItem(db, "sessions", "current");
-    //localStorage.removeItem("nopwd:session:activity");
-
+  if (session === null) {
     return null;
-  } finally {
-    unlock();
   }
+
+  if (session.token_payload.exp - 60 <= now) {
+    pAccessToken = refreshSession();
+    return pAccessToken;
+  }
+
+  if (session.token_payload.exp - 5 * 60 <= now) {
+    const prev = pAccessToken;
+    pAccessToken = refreshSession();
+    return prev;
+  }
+
+  return pAccessToken;
 };
 
 export const revoke = async function () {
@@ -199,6 +170,65 @@ export const revoke = async function () {
     throw new UnexpectedError(e);
   } finally {
     await deleteItem(db, "sessions", "current");
+    pAccessToken = Promise.resolve(null);
     //localStorage.removeItem("nopwd:session:activity");
   }
 };
+
+const refreshSession = async function (): Promise<Session | null> {
+  try {
+    const now = Math.round(Date.now() / 1000);
+    const db = await getNopwdDb();
+    const session = await getItem<SessionObject>(db, "sessions", "current");
+
+    if (!session) {
+      return null;
+    }
+
+    if (session.expires_at < now || session.used_at + session.idle_timeout < now) {
+      throw new Error("expired session"); // go to catch
+    }
+
+    const challenge = decodeFromSafe64(session.next_challenge);
+    const signature = await sign(challenge, session.private_key);
+
+    const { access_token, next_challenge } = await endpoint({
+      method: "POST",
+      ressource: `/sessions/${session.session_id}/tokens`,
+      data: {
+        signature: bufferTo64Safe(signature),
+      },
+    });
+
+    const payload = getPayload(access_token);
+
+    session.next_challenge = next_challenge;
+    session.used_at = payload.iat;
+    await putItem(db, "sessions", session);
+
+    return {
+      token: access_token,
+      token_payload: payload,
+
+      created_at: session.created_at,
+      created_with: session.created_with,
+
+      expires_at: session.expires_at,
+      idle_timeout: session.idle_timeout,
+      used_at: session.used_at,
+
+      suggest_passkeys: (await isWebauthnSupported()) && !session.created_with.includes("webauthn"),
+    };
+  } catch (e) {
+    if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
+      throw e;
+    }
+
+    const db = await getNopwdDb();
+    await deleteItem(db, "sessions", "current");
+
+    return null;
+  }
+};
+
+let pAccessToken: Promise<Session | null> = refreshSession();

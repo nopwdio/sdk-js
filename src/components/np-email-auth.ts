@@ -69,7 +69,7 @@ export class NpEmailLogin extends LitElement {
   }
 
   async login() {
-    if (this.state && this.email === undefined) {
+    if (this.state || this.email === undefined) {
       return;
     }
 
