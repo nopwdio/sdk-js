@@ -98,6 +98,7 @@ export class NpEmailLogin extends LitElement {
     if (!hasCallbackCode()) {
       return;
     }
+
     try {
       this.abort = new AbortController();
 

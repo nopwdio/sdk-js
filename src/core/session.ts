@@ -57,7 +57,7 @@ export const create = async function (
   token: string,
   lifetime?: number,
   idleTimeout?: number
-): Promise<Session | null> {
+): Promise<Session> {
   try {
     const now = Math.round(Date.now() / 1000);
     const keyPair = await generateKey();
@@ -102,7 +102,7 @@ export const create = async function (
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
 
-    pAccessToken = Promise.resolve({
+    const session = {
       token: access_token,
       token_payload: getPayload(access_token),
 
@@ -114,9 +114,11 @@ export const create = async function (
       used_at: used_at,
 
       suggest_passkeys: (await isWebauthnSupported()) && !created_with.includes("webauthn"),
-    });
+    };
 
-    return pAccessToken;
+    pSession = Promise.resolve(session);
+
+    return session;
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
       throw e;
@@ -128,24 +130,24 @@ export const create = async function (
 
 export const get = async function (): Promise<Session | null> {
   const now = Math.round(Date.now() / 1000);
-  const session = await pAccessToken;
+  const session = await pSession;
 
   if (session === null) {
     return null;
   }
 
   if (session.token_payload.exp - 60 <= now) {
-    pAccessToken = refreshSession();
-    return pAccessToken;
+    pSession = refreshSession();
+    return pSession;
   }
 
   if (session.token_payload.exp - 5 * 60 <= now) {
-    const prev = pAccessToken;
-    pAccessToken = refreshSession();
+    const prev = pSession;
+    pSession = refreshSession();
     return prev;
   }
 
-  return pAccessToken;
+  return pSession;
 };
 
 export const revoke = async function () {
@@ -170,7 +172,7 @@ export const revoke = async function () {
     throw new UnexpectedError(e);
   } finally {
     await deleteItem(db, "sessions", "current");
-    pAccessToken = Promise.resolve(null);
+    pSession = Promise.resolve(null);
     //localStorage.removeItem("nopwd:session:activity");
   }
 };
@@ -231,4 +233,4 @@ const refreshSession = async function (): Promise<Session | null> {
   }
 };
 
-let pAccessToken: Promise<Session | null> = refreshSession();
+let pSession: Promise<Session | null> = refreshSession();
