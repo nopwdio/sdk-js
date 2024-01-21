@@ -68,7 +68,6 @@ export const create = async function (
 
     const {
       session_id,
-      access_token,
       next_challenge,
       idle_timeout,
       expires_at,
@@ -103,8 +102,8 @@ export const create = async function (
     await putItem<SessionObject>(db, "sessions", sessionObject);
 
     const session = {
-      token: access_token,
-      token_payload: getPayload(access_token),
+      token: token,
+      token_payload: getPayload(token),
 
       created_at: created_at,
       created_with: created_with,
