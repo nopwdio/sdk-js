@@ -129,6 +129,12 @@ export const create = async function (
 
 export const get = async function (): Promise<Session | null> {
   const now = Math.round(Date.now() / 1000);
+
+  if (pSession === null) {
+    pSession = refreshSession();
+    return pSession;
+  }
+
   const session = await pSession;
 
   if (session === null) {
@@ -232,4 +238,4 @@ const refreshSession = async function (): Promise<Session | null> {
   }
 };
 
-let pSession: Promise<Session | null> = refreshSession();
+let pSession: null | Promise<Session | null> = null;
