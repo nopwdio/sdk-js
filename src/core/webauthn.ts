@@ -29,7 +29,7 @@ export interface Passkey {
  */
 export const register = async function (token: string, signal?: AbortSignal) {
   try {
-    if (!isWebauthnSupported()) {
+    if (!(await isWebauthnSupported())) {
       throw new WebauthnNotSupportedError();
     }
 

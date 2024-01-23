@@ -170,7 +170,7 @@ export class NpPasskeyConditional extends LitElement {
         @focus=${this.startConditional}
         .value=${this.value}
         placeholder=${this.placeholder}
-        autocomplete="email username webauthn"
+        autocomplete="webauthn email username"
         enterkeyhint=${this.enterkeyhint}
         part="input"
       />

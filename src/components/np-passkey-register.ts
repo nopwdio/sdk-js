@@ -54,7 +54,7 @@ export class NpPasskeyRegister extends LitElement {
   }
 
   private async onClick() {
-    await this.register();
+    return await this.register();
   }
 
   async register() {
@@ -64,14 +64,17 @@ export class NpPasskeyRegister extends LitElement {
 
     try {
       const session = await get();
+
       if (!session) {
         throw new Error("you must be authenticated to create a passkey");
         return;
       }
 
       this.abort = new AbortController();
+
       this.state = State.REGISTERING;
       const { id } = await register(session.token, this.abort.signal);
+
       this.state = State.REGISTERED;
       this.dispatchRegisterEvent(id);
       this.resetState(this.resetDuration);
