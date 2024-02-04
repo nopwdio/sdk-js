@@ -34,6 +34,7 @@ export enum State {
 export class NpStatus extends LitElement {
   @property({ type: Object }) status?: Status;
   @property({ reflect: true }) state?: State;
+  @property({ type: Boolean }) connected: boolean = true;
 
   private unsub?: () => void;
   private refreshIntervalId?: number;
@@ -42,10 +43,6 @@ export class NpStatus extends LitElement {
     super.connectedCallback();
 
     this.updateState = this.updateState.bind(this);
-
-    window.addEventListener("online", this.updateState);
-    window.addEventListener("offline", this.updateState);
-
     // needed if status has no update anymore
     this.refreshIntervalId = window.setInterval(this.updateState, 60 * 1000);
 
@@ -55,9 +52,6 @@ export class NpStatus extends LitElement {
   async disconnectedCallback() {
     super.disconnectedCallback();
     this.stop();
-
-    window.removeEventListener("online", this.updateState);
-    window.removeEventListener("offline", this.updateState);
   }
 
   private updateState() {
