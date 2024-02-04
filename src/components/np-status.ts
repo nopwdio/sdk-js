@@ -14,8 +14,6 @@ interface Status {
 }
 
 export enum State {
-  INITIALIZING = "initializing",
-  DISCONNECTED = "disconnected",
   OPERATIONAL = "operational",
   DISRUPTED = "disrupted",
   DOWN = "down",
@@ -25,16 +23,16 @@ export enum State {
  * @summary Nopwd Status component
  *
  * @slot - The default label.
- * @slot loggingout - revoking the user session.
- * @slot loggedout - session is revoked.
+ * @slot operational - all services are working.
+ * @slot disrupted - some error occured last 24h.
+ * * @slot down - an error occured no success since last hour.
  *
- * @csspart button - The component's button wrapper.
+ * @csspart link - The component's link wrapper.
  */
 @customElement("np-status")
 export class NpStatus extends LitElement {
   @property({ type: Object }) status?: Status;
   @property({ reflect: true }) state?: State;
-  @property({ type: Boolean }) connected: boolean = true;
 
   private unsub?: () => void;
   private refreshIntervalId?: number;
@@ -65,13 +63,8 @@ export class NpStatus extends LitElement {
   private updateState() {
     const now = Date.now() / 1000;
 
-    if (!navigator.onLine) {
-      this.setAttribute("state", State.DISCONNECTED);
-      return;
-    }
-
-    if (this.status === undefined) {
-      this.setAttribute("state", State.INITIALIZING);
+    if (!navigator.onLine || this.status === undefined) {
+      this.removeAttribute("state");
       return;
     }
 
@@ -117,24 +110,15 @@ export class NpStatus extends LitElement {
 
   // Render the UI as a function of component state
   render() {
-    if (this.state === State.DISCONNECTED) {
-      return html`<a href="https://nopwd.io/status">${wifiOff} Not connected</a>`;
-    }
-    if (this.state === State.DOWN) {
-      return html`<a href="https://nopwd.io/status">${warning} Service is down</a>`;
-    }
-    if (this.state === State.DISRUPTED) {
-      return html`<a href="https://nopwd.io/status">${warning} Some systems disrupted</a>`;
-    }
-    if (this.state === State.OPERATIONAL) {
-      return html`<a href="https://nopwd.io/status">${checkCircle} All systems operational</a>`;
-    }
-
-    if (this.state === State.INITIALIZING) {
-      return html`<a href="https://nopwd.io/status">${loading} fetching data...</a>`;
-    }
-
-    return html`<a href="https://nopwd.io/status">nopwd API status</a>`;
+    return html`<a href="https://nopwd.io/status" part="link">
+      ${this.state === State.DOWN
+        ? html`${warning} Service is down`
+        : this.state === State.DISRUPTED
+        ? html`${warning} Some systems disrupted`
+        : this.state === State.OPERATIONAL
+        ? html`${checkCircle} All systems operational`
+        : html`API status`}
+    </a>`;
   }
 
   static styles = [core, link, styles];
