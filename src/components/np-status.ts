@@ -43,6 +43,10 @@ export class NpStatus extends LitElement {
     super.connectedCallback();
 
     this.updateState = this.updateState.bind(this);
+
+    window.addEventListener("online", this.updateState, true);
+    window.addEventListener("offline", this.updateState, true);
+
     // needed if status has no update anymore
     this.refreshIntervalId = window.setInterval(this.updateState, 60 * 1000);
 
@@ -51,6 +55,10 @@ export class NpStatus extends LitElement {
 
   async disconnectedCallback() {
     super.disconnectedCallback();
+
+    window.removeEventListener("online", this.updateState, true);
+    window.removeEventListener("offline", this.updateState, true);
+
     this.stop();
   }
 
@@ -122,7 +130,11 @@ export class NpStatus extends LitElement {
       return html`<a href="https://nopwd.io/status">${checkCircle} All systems operational</a>`;
     }
 
-    return html`<a href="https://nopwd.io/status">${loading} fetching data...</a>`;
+    if (this.state === State.INITIALIZING) {
+      return html`<a href="https://nopwd.io/status">${loading} fetching data...</a>`;
+    }
+
+    return html`<a href="https://nopwd.io/status">nopwd API status</a>`;
   }
 
   static styles = [core, link, styles];
