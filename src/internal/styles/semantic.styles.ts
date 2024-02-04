@@ -14,16 +14,11 @@ export const link = css`
     /* common style */
     text-decoration: none;
     gap: var(--np-core-icon-gap);
-    padding: var(--np-core-padding-s) var(--np-core-padding-l);
     font-size: var(--np-core-font-size-m);
     font-weight: var(--np-core-font-weight-l);
-    border: solid transparent var(--core-border-width-xs);
-    border-radius: var(--np-core-border-radius-s);
 
     /* we expose link variables */
     color: var(--link-text-color);
-    border-color: var(--link-border-color);
-    background: var(--link-background-color);
 
     transition: all 100ms ease;
   }

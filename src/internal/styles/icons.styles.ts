@@ -58,6 +58,14 @@ export const loading = html`<svg
   />
 </svg>`;
 
+export const circleSolid = html`<svg
+  class="icon icon--circle-solid"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+>
+  <circle cx="12" cy="12" r="12" fill="currentColor" />
+</svg>`;
+
 export const exclamationCircle = html`<svg
   xmlns="http://www.w3.org/2000/svg"
   fill="none"

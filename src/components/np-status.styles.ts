@@ -6,33 +6,29 @@ export default css`
   }
 
   :host {
-    --link-text-color: var(--np-core-color-white);
-    --link-background-color: var(--np-core-color-black);
-  }
-
-  /* button busy */
-  :host([state="initializing"]) {
-    --link-background-color: transparent;
-    --link-text-color: var(--np-core-color-grey-m);
+    --link-text-color: inherit;
   }
 
   /* button success */
   :host([state="operational"]) {
-    --link-background-color: var(--np-core-color-green-m);
-    --link-text-color: var(--np-core-color-white);
+    --link-text-color: var(--np-core-color-green-m);
+  }
+
+  :host([state="operational"]) .icon {
+    font-size: 0.6em;
+    animation: glow 1500ms ease-out infinite;
   }
 
   :host([state="down"]) {
-    --link-background-color: var(--np-core-color-red-m);
-    --link-text-color: var(--np-core-color-white);
+    --link-text-color: var(--np-core-color-red-m);
   }
 
   :host([state="disrupted"]) {
-    --link-background-color: var(--np-core-color-orange-m);
-    --link-text-color: var(--np-core-color-white);
+    --link-text-color: var(--np-core-color-orange-m);
   }
 
-  .icon--loading {
+  :host(:not([state])) .icon {
+    font-size: 0.6em;
     animation: scale 300ms ease-out infinite alternate;
   }
 
@@ -42,6 +38,17 @@ export default css`
     }
     100% {
       transform: scale(1);
+    }
+  }
+  @keyframes glow {
+    0% {
+      opacity: 0.6;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
     }
   }
 `;

@@ -3,7 +3,13 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
-import { loading, warning, wifiOff, checkCircle } from "../internal/styles/icons.styles.js";
+import {
+  loading,
+  warning,
+  wifiOff,
+  checkCircle,
+  circleSolid,
+} from "../internal/styles/icons.styles.js";
 
 import { getStore } from "../internal/api/firestore.js";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -116,8 +122,8 @@ export class NpStatus extends LitElement {
         : this.state === State.DISRUPTED
         ? html`${warning} Some systems disrupted`
         : this.state === State.OPERATIONAL
-        ? html`${checkCircle} All systems operational`
-        : html`API status`}
+        ? html`${circleSolid} All systems operational`
+        : html`${loading} <slot>API status</slot>`}
     </a>`;
   }
 
