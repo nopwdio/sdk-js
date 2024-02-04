@@ -48,6 +48,18 @@ export const core = css`
     --np-core-color-pink-m: hsl(330, 100%, 50%, 1);
     --np-core-color-pink-l: hsl(330, 100%, 60%, 1);
     --np-core-color-pink-xl: hsl(330, 100%, 70%, 1);
+
+    --np-core-color-yellow-xs: hsl(70, 100%, 55%, 1);
+    --np-core-color-yellow-s: hsl(70, 100%, 65%, 1);
+    --np-core-color-yellow-m: hsl(70, 100%, 75%, 1);
+    --np-core-color-yellow-l: hsl(70, 100%, 85%, 1);
+    --np-core-color-yellow-xl: hsl(70, 100%, 96%, 1);
+
+    --np-core-color-orange-xs: hsl(39, 89%, 43%, 1);
+    --np-core-color-orange-s: hsl(39, 89%, 53%, 1);
+    --np-core-color-orange-m: hsl(39, 89%, 63%, 1);
+    --np-core-color-orange-l: hsl(39, 89%, 73%, 1);
+    --np-core-color-orange-xl: hsl(39, 89%, 83%, 1);
   }
 
   :host {

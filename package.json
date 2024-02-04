@@ -1,6 +1,6 @@
 {
   "name": "@nopwdio/sdk-js",
-  "version": "0.4.13",
+  "version": "0.4.14",
   "license": "MIT",
   "author": "Adrien Pinet",
   "contributors": [
@@ -45,5 +45,8 @@
     "esbuild": "^0.19.2",
     "typescript": "^5.2.2"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "firebase": "^10.8.0"
+  }
 }

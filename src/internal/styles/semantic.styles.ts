@@ -1,5 +1,39 @@
 import { css } from "lit";
 
+export const link = css`
+  a {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+
+    /** better center text */
+    line-height: 1em;
+
+    /* common style */
+    text-decoration: none;
+    gap: var(--np-core-icon-gap);
+    padding: var(--np-core-padding-s) var(--np-core-padding-l);
+    font-size: var(--np-core-font-size-m);
+    font-weight: var(--np-core-font-weight-l);
+    border: solid transparent var(--core-border-width-xs);
+    border-radius: var(--np-core-border-radius-s);
+
+    /* we expose link variables */
+    color: var(--link-text-color);
+    border-color: var(--link-border-color);
+    background: var(--link-background-color);
+
+    transition: all 100ms ease;
+  }
+
+  a .icon {
+    flex-shrink: 0;
+    width: var(--np-core-font-size-m);
+  }
+`;
+
 export const button = css`
   button {
     display: flex;
