@@ -110,20 +110,19 @@ export class NpStatus extends LitElement {
   // Render the UI as a function of component state
   render() {
     if (this.state === State.DISCONNECTED) {
-      return html`<span href="https://nopwd.io/status">${wifiOff} Not connected</span>`;
+      return html`<a href="https://nopwd.io/status">${wifiOff} Not connected</a>`;
     }
-    if (this.state === State.INITIALIZING) {
-      return html`<span href="https://nopwd.io/status">${loading} Getting status...</span>`;
+    if (this.state === State.DOWN) {
+      return html`<a href="https://nopwd.io/status">${warning} Service is down</a>`;
     }
     if (this.state === State.DISRUPTED) {
-      return html`<span href="https://nopwd.io/status">${warning} Some systems disrupted</span>`;
+      return html`<a href="https://nopwd.io/status">${warning} Some systems disrupted</a>`;
     }
     if (this.state === State.OPERATIONAL) {
-      return html`<span href="https://nopwd.io/status"
-        >${checkCircle} All systems operational</span
-      >`;
+      return html`<a href="https://nopwd.io/status">${checkCircle} All systems operational</a>`;
     }
-    return html`<span href="https://nopwd.io/status">${warning} Service is down</span>`;
+
+    return html`<a href="https://nopwd.io/status">${loading} fetching data...</a>`;
   }
 
   static styles = [core, link, styles];
