@@ -6,18 +6,14 @@ import styles from "./np-status.styles.js";
 import {
   loading,
   warning,
-  checkSolid,
   wifiOff,
-  checkCircle,
-  exclamationCircle,
   checkCircleSolid,
   exclamationCircleSolid,
+  checkCircle,
 } from "../internal/styles/icons.styles.js";
 
-import { AbortError, NoPwdError } from "../internal/api/errors.js";
-import { get, revoke } from "../core/session.js";
 import { getStore } from "../internal/api/firestore.js";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 interface Status {
   lastSuccess: number;
@@ -126,17 +122,19 @@ export class NpStatus extends LitElement {
 
   // Render the UI as a function of component state
   render() {
-    return html` <a href="https://nopwd.io/status">
-      ${this.state === State.DISCONNECTED
-        ? html`${wifiOff} Not connected`
-        : this.state === State.INITIALIZING
-        ? html`${loading} Getting status...`
-        : this.state === State.DISRUPTED
-        ? html`${exclamationCircleSolid} Some systems disrupted`
-        : this.state === State.OPERATIONAL
-        ? html`${checkCircleSolid} All systems operational`
-        : html`${warning} Service is down`}
-    </a>`;
+    if (this.state === State.DISCONNECTED) {
+      return html`<a href="https://nopwd.io/status">${wifiOff} Not connected</a>`;
+    }
+    if (this.state === State.INITIALIZING) {
+      return html`<a href="https://nopwd.io/status">${loading} Getting status...</a>`;
+    }
+    if (this.state === State.DISRUPTED) {
+      return html`<a href="https://nopwd.io/status">${warning} Some systems disrupted</a>`;
+    }
+    if (this.state === State.OPERATIONAL) {
+      return html`<a href="https://nopwd.io/status>">${checkCircle} All systems operational</a>`;
+    }
+    return html`<a href="https://nopwd.io/status">${warning} Service is down</a>`;
   }
 
   static styles = [core, link, styles];
