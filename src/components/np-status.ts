@@ -3,14 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
-import {
-  loading,
-  warning,
-  wifiOff,
-  checkCircleSolid,
-  exclamationCircleSolid,
-  checkCircle,
-} from "../internal/styles/icons.styles.js";
+import { loading, warning, wifiOff, checkCircle } from "../internal/styles/icons.styles.js";
 
 import { getStore } from "../internal/api/firestore.js";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -132,7 +125,7 @@ export class NpStatus extends LitElement {
       return html`<a href="https://nopwd.io/status">${warning} Some systems disrupted</a>`;
     }
     if (this.state === State.OPERATIONAL) {
-      return html`<a href="https://nopwd.io/status>">${checkCircle} All systems operational</a>`;
+      return html`<a href="https://nopwd.io/status">${checkCircle} All systems operational</a>`;
     }
     return html`<a href="https://nopwd.io/status">${warning} Service is down</a>`;
   }
