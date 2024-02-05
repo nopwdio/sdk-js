@@ -15,8 +15,8 @@ import { getStore } from "../internal/api/firestore.js";
 import { doc, onSnapshot } from "firebase/firestore";
 
 interface Status {
-  lastSuccess: number;
-  lastError: number;
+  last_success: number;
+  last_error: number;
 }
 
 export enum State {
@@ -74,17 +74,17 @@ export class NpStatus extends LitElement {
       return;
     }
 
-    if (this.status.lastError && now - this.status.lastError < 3600) {
+    if (this.status.last_error && now - this.status.last_error < 3600) {
       this.setAttribute("state", State.DOWN);
       return;
     }
 
-    if (this.status.lastError && now - this.status.lastError < 24 * 3600) {
+    if (this.status.last_error && now - this.status.last_error < 24 * 3600) {
       this.setAttribute("state", State.DISRUPTED);
       return;
     }
 
-    if (this.status.lastSuccess && now - this.status.lastSuccess < 3600) {
+    if (this.status.last_success && now - this.status.last_success < 3600) {
       this.setAttribute("state", State.OPERATIONAL);
       return;
     }
@@ -96,7 +96,7 @@ export class NpStatus extends LitElement {
     this.updateState();
     const db = getStore();
 
-    let healthDoc = doc(db, "api", "health");
+    let healthDoc = doc(db, "api.v0", "health");
     this.unsub = onSnapshot(healthDoc, (doc) => {
       this.status = doc.data() as Status;
       this.updateState();
