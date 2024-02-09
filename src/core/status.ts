@@ -1,4 +1,4 @@
-import { endpoint } from "../internal/api/endpoint";
+import { endpoint } from "../internal/api/endpoint.js";
 
 interface Status {
   success_count: number;
