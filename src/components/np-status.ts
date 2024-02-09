@@ -27,7 +27,6 @@ export enum State {
  */
 @customElement("np-status")
 export class NpStatus extends LitElement {
-  @property({ reflect: true, type: Boolean }) refreshing: boolean = false;
   @property({ reflect: true }) state: State = State.UNKNOWN;
   private intervalId?: number;
 
@@ -57,16 +56,9 @@ export class NpStatus extends LitElement {
 
   private async updateStatus() {
     try {
-      wait(100);
-
-      if (this.refreshing) {
-        return;
-      }
-
-      this.refreshing = true;
       const statuses = await get(1);
-      //      await wait(100);
       const status = statuses[0];
+
       if (status.success_count === 0) {
         this.state = State.DOWN;
         return;
@@ -80,8 +72,6 @@ export class NpStatus extends LitElement {
       this.state = State.OPERATIONAL;
     } catch (e) {
       this.state = State.UNKNOWN;
-    } finally {
-      this.refreshing = false;
     }
   }
 
@@ -106,7 +96,7 @@ export class NpStatus extends LitElement {
         ? html`${warning} Some systems disrupted`
         : this.state === State.OPERATIONAL
         ? html`${circleSolid} All systems operational`
-        : html`${this.refreshing ? loading : html``}<slot>API status</slot>`}
+        : html`${loading}<slot>API status</slot>`}
     </a>`;
   }
 
