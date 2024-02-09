@@ -27,7 +27,7 @@ export default css`
     --link-text-color: var(--np-core-color-orange-m);
   }
 
-  :host(:not([state])) .icon {
+  :host([refreshing]) .icon {
     font-size: 0.6em;
     animation: scale 300ms ease-out infinite alternate;
   }

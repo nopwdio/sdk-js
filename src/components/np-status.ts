@@ -3,26 +3,15 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
-import {
-  loading,
-  warning,
-  wifiOff,
-  checkCircle,
-  circleSolid,
-} from "../internal/styles/icons.styles.js";
+import { loading, warning, circleSolid } from "../internal/styles/icons.styles.js";
 
-import { getStore } from "../internal/api/firestore.js";
-import { doc, onSnapshot } from "firebase/firestore";
-
-interface Status {
-  last_success: number;
-  last_error: number;
-}
+import { get } from "../core/status.js";
 
 export enum State {
   OPERATIONAL = "operational",
   DISRUPTED = "disrupted",
   DOWN = "down",
+  UNKNOWN = "unknown",
 }
 
 /**
@@ -37,22 +26,21 @@ export enum State {
  */
 @customElement("np-status")
 export class NpStatus extends LitElement {
-  @property({ type: Object }) status?: Status;
-  @property({ reflect: true }) state?: State;
+  @property({ reflect: true, type: Boolean }) refreshing: boolean = false;
+  @property({ reflect: true }) state: State = State.UNKNOWN;
+  private intervalId?: number;
 
-  private unsub?: () => void;
-  private refreshIntervalId?: number;
+  constructor() {
+    super();
+    this.start = this.start.bind(this);
+    this.stop = this.stop.bind(this);
+  }
 
   async connectedCallback() {
     super.connectedCallback();
 
-    this.updateState = this.updateState.bind(this);
-
-    window.addEventListener("online", this.updateState, true);
-    window.addEventListener("offline", this.updateState, true);
-
-    // needed if status has no update anymore
-    this.refreshIntervalId = window.setInterval(this.updateState, 60 * 1000);
+    window.addEventListener("online", this.start);
+    window.addEventListener("offline", this.stop);
 
     this.start();
   }
@@ -60,58 +48,49 @@ export class NpStatus extends LitElement {
   async disconnectedCallback() {
     super.disconnectedCallback();
 
-    window.removeEventListener("online", this.updateState, true);
-    window.removeEventListener("offline", this.updateState, true);
+    window.removeEventListener("online", this.start);
+    window.removeEventListener("offline", this.stop);
 
     this.stop();
   }
 
-  private updateState() {
-    const now = Date.now() / 1000;
+  private async updateStatus() {
+    try {
+      if (this.refreshing) {
+        return;
+      }
 
-    if (!navigator.onLine || this.status === undefined) {
-      this.removeAttribute("state");
-      return;
+      this.refreshing = true;
+      const status = await get(1);
+      //      await wait(100);
+
+      if (status.success_count === 0) {
+        this.state = State.DOWN;
+        return;
+      }
+
+      if (status.error_count > 0) {
+        this.state = State.DISRUPTED;
+        return;
+      }
+
+      this.state = State.OPERATIONAL;
+    } catch (e) {
+      this.state = State.UNKNOWN;
+    } finally {
+      this.refreshing = false;
     }
-
-    if (this.status.last_error && now - this.status.last_error < 3600) {
-      this.setAttribute("state", State.DOWN);
-      return;
-    }
-
-    if (this.status.last_error && now - this.status.last_error < 24 * 3600) {
-      this.setAttribute("state", State.DISRUPTED);
-      return;
-    }
-
-    if (this.status.last_success && now - this.status.last_success < 3600) {
-      this.setAttribute("state", State.OPERATIONAL);
-      return;
-    }
-
-    this.setAttribute("state", State.DOWN);
   }
 
-  private start() {
-    this.updateState();
-    const db = getStore();
-
-    let healthDoc = doc(db, "api.v0", "health");
-    this.unsub = onSnapshot(healthDoc, (doc) => {
-      this.status = doc.data() as Status;
-      this.updateState();
-    });
+  private async start() {
+    this.stop();
+    await this.updateStatus();
+    this.intervalId = window.setInterval(this.updateStatus, 10000);
   }
 
   private stop() {
-    this.unsub && this.unsub();
-    this.unsub = undefined;
-
-    this.refreshIntervalId && clearInterval(this.refreshIntervalId);
-    this.refreshIntervalId = undefined;
-
-    this.status = undefined;
-    this.state = undefined;
+    clearInterval(this.intervalId);
+    this.state = State.UNKNOWN;
   }
 
   // Render the UI as a function of component state
@@ -123,7 +102,7 @@ export class NpStatus extends LitElement {
         ? html`${warning} Some systems disrupted`
         : this.state === State.OPERATIONAL
         ? html`${circleSolid} All systems operational`
-        : html`${loading} <slot>API status</slot>`}
+        : html`${this.refreshing ? loading : html``}<slot>API status</slot>`}
     </a>`;
   }
 
