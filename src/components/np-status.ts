@@ -6,6 +6,7 @@ import styles from "./np-status.styles.js";
 import { loading, warning, circleSolid } from "../internal/styles/icons.styles.js";
 
 import { get } from "../core/status.js";
+import { wait } from "../internal/util/wait.js";
 
 export enum State {
   OPERATIONAL = "operational",
@@ -56,6 +57,8 @@ export class NpStatus extends LitElement {
 
   private async updateStatus() {
     try {
+      wait(100);
+
       if (this.refreshing) {
         return;
       }
