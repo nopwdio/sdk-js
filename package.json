@@ -35,8 +35,7 @@
     "build": "npm run clean && npm run build:cdn && npm run build:dist"
   },
   "peerDependencies": {
-    "lit": "^3.0.3",
-    "firebase": "^10.8.0"
+    "lit": "^3.0.3"
   },
   "devDependencies": {
     "@open-wc/testing": "^3.2.0",
