@@ -84,8 +84,8 @@ export class NpStatus extends LitElement {
 
   private async start() {
     this.stop();
-    await this.updateStatus();
-    this.intervalId = window.setInterval(this.updateStatus, 10000);
+    this.updateStatus();
+    this.intervalId = window.setInterval(this.updateStatus, 60000);
   }
 
   private stop() {
