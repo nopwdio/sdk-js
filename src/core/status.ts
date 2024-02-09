@@ -10,5 +10,5 @@ export const get = async function (limit: number = 1, scope?: string) {
   return (await endpoint({
     method: "GET",
     ressource: scope ? `/statuses/${scope}` : "/statuses",
-  })) as Status;
+  })) as Status[];
 };

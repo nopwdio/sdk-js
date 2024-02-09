@@ -64,9 +64,9 @@ export class NpStatus extends LitElement {
       }
 
       this.refreshing = true;
-      const status = await get(1);
+      const statuses = await get(1);
       //      await wait(100);
-
+      const status = statuses[0];
       if (status.success_count === 0) {
         this.state = State.DOWN;
         return;
@@ -86,6 +86,7 @@ export class NpStatus extends LitElement {
   }
 
   private async start() {
+    console.log("start");
     this.stop();
     this.updateStatus();
     this.intervalId = window.setInterval(this.updateStatus, 60000);
