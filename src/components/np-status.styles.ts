@@ -30,12 +30,13 @@ export default css`
   :host([state="unknown"]) {
     --link-text-color: var(--np-core-color-grey-m);
   }
+
   :host([state="unknown"]) .icon {
     animation: scale 300ms ease-out infinite alternate;
   }
 
   .icon {
-    font-size: 0.6em;
+    font-size: 0.7em;
   }
 
   @keyframes scale {

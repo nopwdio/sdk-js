@@ -6,9 +6,16 @@ interface Status {
   total_exec_time_ms: number;
 }
 
-export const get = async function (limit: number = 1, scope?: string) {
+export const get = async function (params: {
+  limit?: number;
+  scope?: string;
+  signal?: AbortSignal;
+}) {
+  let ressource = params.scope ? `/statuses/${params.scope}` : "/statuses";
+  ressource = params.limit ? `${ressource}?limit=${params.limit}` : ressource;
+
   return (await endpoint({
     method: "GET",
-    ressource: scope ? `/statuses/${scope}` : "/statuses",
+    ressource: ressource,
   })) as Status[];
 };

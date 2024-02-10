@@ -6,7 +6,8 @@ import styles from "./np-status.styles.js";
 import { loading, warning, circleSolid, wifiOff } from "../internal/styles/icons.styles.js";
 
 import { get } from "../core/status.js";
-import { wait } from "../internal/util/wait.js";
+import { minWait, wait } from "../internal/util/wait.js";
+import { NetworkError } from "../core/errors.js";
 
 export enum State {
   OPERATIONAL = "operational",
@@ -29,7 +30,6 @@ export enum State {
 @customElement("np-status")
 export class NpStatus extends LitElement {
   @property({ reflect: true }) state: State = State.UNKNOWN;
-  private intervalId?: number;
 
   constructor() {
     super();
@@ -57,8 +57,11 @@ export class NpStatus extends LitElement {
 
   private async updateStatus() {
     try {
-      this.state = State.UNKNOWN;
-      const statuses = await get(1);
+      if (this.state === State.OFFLINE) {
+        return;
+      }
+
+      const statuses = await get({});
       const status = statuses[0];
 
       if (status.success_count === 0) {
@@ -74,17 +77,18 @@ export class NpStatus extends LitElement {
       this.state = State.OPERATIONAL;
     } catch (e) {
       this.state = State.UNKNOWN;
+    } finally {
+      await wait(3000);
+      requestAnimationFrame(() => this.updateStatus());
     }
   }
 
   private async start() {
+    this.state = State.UNKNOWN;
     this.updateStatus();
-    clearInterval(this.intervalId);
-    this.intervalId = window.setInterval(this.updateStatus, 60000);
   }
 
-  private stop() {
-    clearInterval(this.intervalId);
+  private async stop() {
     this.state = State.OFFLINE;
   }
 
