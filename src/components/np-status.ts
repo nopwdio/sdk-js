@@ -78,7 +78,7 @@ export class NpStatus extends LitElement {
     } catch (e) {
       this.state = State.UNKNOWN;
     } finally {
-      await wait(3000);
+      await wait(30000);
       requestAnimationFrame(() => this.updateStatus());
     }
   }
