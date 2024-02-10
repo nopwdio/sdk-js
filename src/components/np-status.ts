@@ -61,7 +61,7 @@ export class NpStatus extends LitElement {
         return;
       }
 
-      const statuses = await get({});
+      const statuses = await get({ scope: this.getAttribute("scope") || "" });
       const status = statuses[0];
 
       if (status.success_count === 0) {
