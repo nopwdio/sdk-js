@@ -1,6 +1,6 @@
 import { endpoint } from "../internal/api/endpoint.js";
 
-interface Status {
+export interface Status {
   success_count: number;
   error_count: number;
   total_exec_time_ms: number;
