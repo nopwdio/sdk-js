@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
-import { loading, warning, circleSolid } from "../internal/styles/icons.styles.js";
+import { loading, warning, circleSolid, wifiOff } from "../internal/styles/icons.styles.js";
 
 import { get } from "../core/status.js";
 import { wait } from "../internal/util/wait.js";
@@ -13,6 +13,7 @@ export enum State {
   DISRUPTED = "disrupted",
   DOWN = "down",
   UNKNOWN = "unknown",
+  OFFLINE = "offline",
 }
 
 /**
@@ -56,6 +57,7 @@ export class NpStatus extends LitElement {
 
   private async updateStatus() {
     try {
+      this.state = State.UNKNOWN;
       const statuses = await get(1);
       const status = statuses[0];
 
@@ -76,15 +78,14 @@ export class NpStatus extends LitElement {
   }
 
   private async start() {
-    console.log("start");
-    this.stop();
     this.updateStatus();
+    clearInterval(this.intervalId);
     this.intervalId = window.setInterval(this.updateStatus, 60000);
   }
 
   private stop() {
     clearInterval(this.intervalId);
-    this.state = State.UNKNOWN;
+    this.state = State.OFFLINE;
   }
 
   // Render the UI as a function of component state
@@ -96,7 +97,9 @@ export class NpStatus extends LitElement {
         ? html`${warning} Some systems disrupted`
         : this.state === State.OPERATIONAL
         ? html`${circleSolid} All systems operational`
-        : html`${loading}<slot>API status</slot>`}
+        : this.state === State.OFFLINE
+        ? html`${wifiOff} offline`
+        : html`${loading}<slot>fetching status...</slot>`}
     </a>`;
   }
 

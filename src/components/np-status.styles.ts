@@ -15,10 +15,10 @@ export default css`
   }
 
   :host([state="operational"]) .icon {
-    font-size: 0.6em;
     animation: glow 1500ms ease-out infinite;
   }
 
+  :host([state="offline"]),
   :host([state="down"]) {
     --link-text-color: var(--np-core-color-red-m);
   }
@@ -27,9 +27,15 @@ export default css`
     --link-text-color: var(--np-core-color-orange-m);
   }
 
-  :host([refreshing]) .icon {
-    font-size: 0.6em;
+  :host([state="unknown"]) {
+    --link-text-color: var(--np-core-color-grey-m);
+  }
+  :host([state="unknown"]) .icon {
     animation: scale 300ms ease-out infinite alternate;
+  }
+
+  .icon {
+    font-size: 0.6em;
   }
 
   @keyframes scale {
