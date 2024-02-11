@@ -14,6 +14,7 @@ export enum State {
   DISRUPTED = "disrupted",
   DOWN = "down",
   UNKNOWN = "unknown",
+  NODATA = "nodata",
   OFFLINE = "offline",
 }
 
@@ -64,6 +65,11 @@ export class NpStatus extends LitElement {
       const statuses = await get({ scope: this.getAttribute("scope") || "" });
       const status = statuses[0];
 
+      if (status.success_count + status.error_count === 0) {
+        this.state = State.NODATA;
+        return;
+      }
+
       if (status.success_count === 0) {
         this.state = State.DOWN;
         return;
@@ -78,7 +84,7 @@ export class NpStatus extends LitElement {
     } catch (e) {
       this.state = State.UNKNOWN;
     } finally {
-      await wait(30000);
+      await wait(60000);
       requestAnimationFrame(() => this.updateStatus());
     }
   }
@@ -97,6 +103,8 @@ export class NpStatus extends LitElement {
     return html`<a href="https://nopwd.io/status" part="link">
       ${this.state === State.DOWN
         ? html`${warning} Service is down`
+        : this.state === State.NODATA
+        ? html`${warning} No data`
         : this.state === State.DISRUPTED
         ? html`${warning} Some systems disrupted`
         : this.state === State.OPERATIONAL

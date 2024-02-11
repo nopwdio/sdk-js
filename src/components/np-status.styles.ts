@@ -27,6 +27,7 @@ export default css`
     --link-text-color: var(--np-core-color-orange-m);
   }
 
+  :host([state="nodata"]),
   :host([state="unknown"]) {
     --link-text-color: var(--np-core-color-grey-m);
   }

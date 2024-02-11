@@ -55,7 +55,7 @@ export class DemoSdk extends LitElement {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
-        <np-status></np-status>
+        <np-status scope="token"></np-status>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
         <np-passkey-conditional
