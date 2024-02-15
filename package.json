@@ -1,6 +1,6 @@
 {
   "name": "@nopwdio/sdk-js",
-  "version": "0.4.36",
+  "version": "0.4.37",
   "license": "MIT",
   "author": "Adrien Pinet",
   "contributors": [
@@ -38,12 +38,12 @@
     "lit": "^3.0.3"
   },
   "devDependencies": {
-    "@open-wc/testing": "^3.2.0",
-    "@web/dev-server-esbuild": "^0.4.1",
-    "@web/test-runner": "^0.17.1",
-    "@web/test-runner-playwright": "^0.10.1",
-    "esbuild": "^0.19.2",
-    "typescript": "^5.2.2"
+    "@open-wc/testing": "^2.5.33",
+    "@web/dev-server-esbuild": "^1.0.2",
+    "@web/test-runner": "^0.10.1",
+    "@web/test-runner-playwright": "^0.6.6",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.3"
   },
   "type": "module"
 }

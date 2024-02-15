@@ -18,7 +18,7 @@ export enum State {
   OFFLINE = "offline",
 }
 
-const UPDATE_DURATION = 1000;
+const UPDATE_DURATION = 2000;
 
 /**
  * @summary Nopwd Status component
