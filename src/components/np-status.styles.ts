@@ -14,10 +14,6 @@ export default css`
     --link-text-color: var(--np-core-color-green-m);
   }
 
-  :host([state="operational"]) .icon {
-    animation: glow 1500ms ease-out infinite;
-  }
-
   :host([state="offline"]),
   :host([state="down"]) {
     --link-text-color: var(--np-core-color-red-m);
@@ -36,6 +32,13 @@ export default css`
     animation: scale 300ms ease-out infinite alternate;
   }
 
+  :host([state="down"]) .icon,
+  :host([state="disrupted"]) .icon,
+  :host([state="operational"]) .icon,
+  :host([state="nodata"]) .icon {
+    animation: glow var(--update-duration) ease-out infinite alternate;
+  }
+
   .icon {
     font-size: 0.7em;
   }
@@ -49,14 +52,13 @@ export default css`
     }
   }
   @keyframes glow {
-    0% {
-      opacity: 0.6;
-    }
-    30% {
-      opacity: 1;
+    50% {
+      opacity: 0.4;
+      transform: scale(0.8);
     }
     100% {
-      opacity: 0.5;
+      opacity: 1;
+      transform: scale(1);
     }
   }
 `;

@@ -5,7 +5,7 @@ import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
 import { loading, warning, circleSolid, wifiOff } from "../internal/styles/icons.styles.js";
 
-import { get } from "../core/status.js";
+import { Status, get } from "../core/status.js";
 import { minWait, wait } from "../internal/util/wait.js";
 import { NetworkError } from "../core/errors.js";
 
@@ -17,6 +17,8 @@ export enum State {
   NODATA = "nodata",
   OFFLINE = "offline",
 }
+
+const UPDATE_DURATION = 1000;
 
 /**
  * @summary Nopwd Status component
@@ -31,40 +33,37 @@ export enum State {
 @customElement("np-status")
 export class NpStatus extends LitElement {
   @property({ reflect: true }) state: State = State.UNKNOWN;
+  private ws?: WebSocket;
+  private updateTimeoutId?: number;
 
   constructor() {
     super();
-    this.start = this.start.bind(this);
-    this.stop = this.stop.bind(this);
   }
 
   async connectedCallback() {
     super.connectedCallback();
-
-    window.addEventListener("online", this.start);
-    window.addEventListener("offline", this.stop);
-
-    this.start();
+    this.style.setProperty("--update-duration", `${UPDATE_DURATION}ms`);
+    this.connect();
   }
 
   async disconnectedCallback() {
     super.disconnectedCallback();
-
-    window.removeEventListener("online", this.start);
-    window.removeEventListener("offline", this.stop);
-
-    this.stop();
+    this.disconnect();
   }
 
-  private async updateStatus() {
-    try {
-      if (this.state === State.OFFLINE) {
-        return;
-      }
+  private async connect() {
+    if (this.state !== State.OFFLINE) {
+      this.state = State.UNKNOWN;
+    }
 
-      const statuses = await get({ scope: this.getAttribute("scope") || "" });
-      const status = statuses[0];
+    const base = "https://ws-a5hdgaocga-uc.a.run.app";
+    const scope = this.getAttribute("scope");
 
+    const path = scope === null ? `${base}/status` : `${base}/status/${scope}`;
+    this.ws = new WebSocket(path);
+
+    this.ws.onmessage = (event) => {
+      const status = JSON.parse(event.data) as Status;
       if (status.success_count + status.error_count === 0) {
         this.state = State.NODATA;
         return;
@@ -81,21 +80,28 @@ export class NpStatus extends LitElement {
       }
 
       this.state = State.OPERATIONAL;
-    } catch (e) {
-      this.state = State.UNKNOWN;
-    } finally {
-      await wait(60000);
-      requestAnimationFrame(() => this.updateStatus());
-    }
+      this.signalUpdate();
+    };
+
+    this.ws.onclose = async () => {
+      this.state = State.OFFLINE;
+      await wait(1000);
+
+      if (this.isConnected) {
+        requestAnimationFrame(() => this.connect());
+      }
+    };
   }
 
-  private async start() {
-    this.state = State.UNKNOWN;
-    this.updateStatus();
-  }
-
-  private async stop() {
+  private disconnect() {
     this.state = State.OFFLINE;
+    this.ws?.close();
+  }
+
+  private signalUpdate() {
+    window.clearTimeout(this.updateTimeoutId);
+    this.setAttribute("updated", "");
+    window.setTimeout(() => this.removeAttribute("updated"), UPDATE_DURATION);
   }
 
   // Render the UI as a function of component state

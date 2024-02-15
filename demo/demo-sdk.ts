@@ -11,6 +11,7 @@ import { Session, get, revoke } from "../src/core/session.js";
 
 import styles from "./demo-sdk.styles.js";
 import { NpPasskeyConditional } from "../src/components/np-passkey-conditional.js";
+import { wait } from "../src/internal/util/wait.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -55,7 +56,7 @@ export class DemoSdk extends LitElement {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
-        <np-status scope="token"></np-status>
+        <np-status scope="session"></np-status>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
         <np-passkey-conditional
