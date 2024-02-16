@@ -32,10 +32,8 @@ export default css`
     animation: scale 300ms ease-out infinite alternate;
   }
 
-  :host([state="down"]) .icon,
   :host([state="disrupted"]) .icon,
-  :host([state="operational"]) .icon,
-  :host([state="nodata"]) .icon {
+  :host([state="operational"]) .icon {
     animation: glow var(--update-duration) ease-out infinite alternate;
   }
 

@@ -46,19 +46,8 @@ npm i @nopwdio/sdk-js@latest
 ```html
 <np-email-auth></np-email-auth>
 
-<!-- importing the component using CDN -->
-<script
-  type="module"
-  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-email-auth.js"
-></script>
-
-<script type="module">
-  // If you use CDN, ensure the component is loaded before interacting with it.
-  await customElements.whenDefined("np-email-auth");
-
+<script>
   const button = document.querySelector("np-email-auth");
-
-  // set the email property with the user's email...
   button.email = "...";
 
   // ...and retrieve the access token by listening the "np:login" event. You're done!
@@ -74,16 +63,7 @@ npm i @nopwdio/sdk-js@latest
 ```html
 <np-passkey-conditional></np-passkey-conditional>
 
-<!-- import the component using CDN -->
-<script
-  type="module"
-  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-passkey-conditional.js"
-></script>
-
-<script type="module">
-  // If you use CDN, ensure the component is loaded before interacting with it.
-  await customElements.whenDefined("np-passkey-conditional");
-
+<script>
   const input = document.querySelector("np-passkey-conditional");
 
   input.addEventListner("np:login", (e) => {

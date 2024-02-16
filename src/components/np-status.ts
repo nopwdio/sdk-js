@@ -117,7 +117,7 @@ export class NpStatus extends LitElement {
         ? html`${circleSolid} All systems operational`
         : this.state === State.OFFLINE
         ? html`${wifiOff} offline`
-        : html`${loading}<slot>fetching status...</slot>`}
+        : html`${loading}<slot>connecting...</slot>`}
     </a>`;
   }
 

@@ -14,10 +14,10 @@ esbuild.build({
         "./src/components/np-passkey-conditional.ts",
         "./src/components/np-logout.ts",
         "./src/components/np-status.ts",
+        "./src/components/np-status-history.ts",
         
         "./src/core/email.ts",
         "./src/core/webauthn.ts",
-        "./src/core/status.ts",
         "./src/core/token.ts",
         "./src/core/session.ts",
     ],

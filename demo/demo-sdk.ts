@@ -6,6 +6,7 @@ import "../src/components/np-passkey-register.js";
 import "../src/components/np-email-auth.js";
 import "../src/components/np-logout.js";
 import "../src/components/np-status.js";
+import "../src/components/np-status-history.js";
 
 import { Session, get, revoke } from "../src/core/session.js";
 
@@ -57,6 +58,7 @@ export class DemoSdk extends LitElement {
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <np-status scope="session"></np-status>
+        <np-status-history></np-status-history>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
         <np-passkey-conditional
