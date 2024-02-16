@@ -1,9 +1,9 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { core } from "../internal/styles/core.styles";
+import { core } from "../internal/styles/core.styles.js";
 import styles from "./np-status-history.styles.js";
-import { wait } from "../internal/util/wait";
-import { Status } from "../core/status";
+import { wait } from "../internal/util/wait.js";
+import { Status } from "../core/status.js";
 
 @customElement("np-status-history")
 export class NpStatusHistory extends LitElement {
