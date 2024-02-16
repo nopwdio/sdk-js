@@ -12,7 +12,7 @@ export class NpStatusHistory extends LitElement {
 
   render() {
     return html`${this.statuses.length === 0
-      ? html`connecting...`
+      ? html``
       : this.statuses.map((status) =>
           status.success_count === 0 && status.error_count === 0
             ? html`<span class="nodata"></span>`
