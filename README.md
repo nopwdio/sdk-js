@@ -41,6 +41,19 @@ You can load our web components via CDN or by installing it locally using packag
 npm i @nopwdio/sdk-js@latest
 ```
 
+and then:
+
+```js
+// to import magic link authentication button
+import "@nopwdio/sdk-js@latest/dist/components/np-email-auth.js";
+
+// to import Passkeys registration button
+import "@nopwdio/sdk-js@latest/dist/components/np-passkey-register.js";
+
+// to import Passkeys authentication input field
+import "@nopwdio/sdk-js@latest/dist/components/np-passkey-conditional.js";
+```
+
 ## How to add magic-link authentication?
 
 ```html

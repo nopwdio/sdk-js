@@ -85,10 +85,10 @@ export class NpStatus extends LitElement {
 
     this.ws.onclose = async () => {
       this.state = State.OFFLINE;
-      await wait(1000);
 
       if (this.isConnected) {
-        requestAnimationFrame(() => this.connect());
+        await wait(1000);
+        this.connect();
       }
     };
   }

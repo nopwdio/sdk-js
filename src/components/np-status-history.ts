@@ -61,7 +61,7 @@ export class NpStatusHistory extends LitElement {
 
       if (this.isConnected) {
         await wait(1000);
-        requestAnimationFrame(() => this.connect());
+        this.connect();
       }
     };
   }

@@ -1,6 +1,6 @@
 {
   "name": "@nopwdio/sdk-js",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "license": "MIT",
   "author": "Adrien Pinet",
   "contributors": [
@@ -43,10 +43,8 @@
     "@web/test-runner": "^0.10.1",
     "@web/test-runner-playwright": "^0.6.6",
     "esbuild": "^0.20.0",
+    "minify-html-literals": "^1.3.5",
     "typescript": "^5.3.3"
   },
-  "type": "module",
-  "dependencies": {
-    "@nopwdio/sdk-js": "^0.5.0"
-  }
+  "type": "module"
 }

@@ -49,6 +49,16 @@ export class DemoSdk extends LitElement {
     console.log(await get());
   }
 
+  private async connect() {
+    const base = "https://ws-a5hdgaocga-uc.a.run.app";
+    const path = `${base}/usage`;
+    const ws = new WebSocket(path);
+
+    ws.onmessage = (event) => {
+      console.log(event.data);
+    };
+  }
+
   private async revoke() {
     console.log(await revoke());
   }
@@ -57,6 +67,7 @@ export class DemoSdk extends LitElement {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
+        <button @click=${this.connect}>connect usage</button>
         <np-status></np-status>
         <np-status-history></np-status-history>
         <button @click=${() => this.refresh()}>refresh</button>
