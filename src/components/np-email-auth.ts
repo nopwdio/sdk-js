@@ -7,7 +7,7 @@ import { envelope, loading, warning, checkSolid } from "../internal/styles/icons
 import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
 import { AbortError, NetworkError } from "../core/errors.js";
 
-import { Session, create } from "../core/session.js";
+import { Session, create, get } from "../core/session.js";
 
 export enum State {
   REQUESTING = "requesting", // sending an authentication request
@@ -92,6 +92,10 @@ export class NpEmailLogin extends LitElement {
     } finally {
       this.abort = null;
     }
+  }
+
+  async getSession() {
+    return get();
   }
 
   private async handleCallbackCodeIfNeeded() {

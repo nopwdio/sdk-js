@@ -33,7 +33,8 @@ export class DemoSdk extends LitElement {
   }
 
   private async onAuthenticated(e: CustomEvent<Session>) {
-    console.log(e.detail);
+    const c = e.target as NpPasskeyConditional;
+    console.log(await c.getSession());
   }
 
   private async onError(e: CustomEvent<Error>) {
