@@ -53,12 +53,23 @@ export class DemoSdk extends LitElement {
     console.log(await revoke());
   }
 
+  private async stream() {
+    const base = "wss://ws-a5hdgaocga-uc.a.run.app";
+    const path = `${base}/countries`;
+    const ws = new WebSocket(path);
+
+    ws.onmessage = (event) => {
+      console.log(JSON.parse(event.data));
+    };
+  }
+
   render() {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <np-status></np-status>
         <np-status-history></np-status-history>
+        <button @click=${() => this.stream()}>stream</button>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
         <np-passkey-conditional

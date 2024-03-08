@@ -30,7 +30,7 @@ export class NpStatusHistory extends LitElement {
   }
 
   private async connect() {
-    const base = "https://ws-a5hdgaocga-uc.a.run.app";
+    const base = "wss://ws-a5hdgaocga-uc.a.run.app";
     const scope = this.getAttribute("scope");
     const path =
       scope === null
