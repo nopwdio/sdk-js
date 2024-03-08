@@ -5,9 +5,8 @@ import { link } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
 import { loading, warning, circleSolid, wifiOff } from "../internal/styles/icons.styles.js";
 
-import { Status, get } from "../core/status.js";
-import { minWait, wait } from "../internal/util/wait.js";
-import { NetworkError } from "../core/errors.js";
+import { Status } from "../core/status.js";
+import { wait } from "../internal/util/wait.js";
 
 export enum State {
   OPERATIONAL = "operational",

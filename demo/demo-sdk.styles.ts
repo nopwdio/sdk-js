@@ -7,7 +7,7 @@ export default css`
     flex-flow: column;
   }
 
-  div {
+  form {
     display: flex;
     border: 1px solid black;
     padding: 1em;
@@ -17,7 +17,7 @@ export default css`
     width: min(100%, 300px);
   }
 
-  div:has(np-test-button[fuck="me"]) h1 {
+  form:has(np-logout[state="loggedout"]) h1 {
     color: red;
   }
 `;

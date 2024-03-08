@@ -46,6 +46,8 @@ export class NpPasskeyConditional extends LitElement {
   @property() placeholder: string = "enter your email";
   /** The input's enterkeyhint. */
   @property() enterkeyhint: string = "Send";
+  /** The input's id. */
+  @property() id: string = "";
   /** The input's value. */
   @property() value: string = "";
 
@@ -174,6 +176,7 @@ export class NpPasskeyConditional extends LitElement {
         @focus=${this.startConditional}
         .value=${this.value}
         placeholder=${this.placeholder}
+        id=${this.id}
         autocomplete="webauthn email username"
         enterkeyhint=${this.enterkeyhint}
         part="input"
