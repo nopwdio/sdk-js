@@ -6,7 +6,7 @@ interface Table {
 
 export const open = function (name: string, tables: Table[]) {
   return new Promise<IDBDatabase>((resolve, reject) => {
-    if (!("indexedDB" in window)) {
+    if (typeof window === "undefined" || !("indexedDB" in window)) {
       reject(new Error("indexedDB is undefined"));
       return;
     }

@@ -6,8 +6,8 @@ export default css`
   }
 
   :host {
-    --button-text-color: var(--np-core-color-white);
     --button-background-color: var(--np-core-color-black);
+    --button-text-color: var(--np-core-color-white);
   }
 
   /* button busy */

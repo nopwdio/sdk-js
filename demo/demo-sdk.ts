@@ -65,7 +65,7 @@ export class DemoSdk extends LitElement {
 
   render() {
     return html`
-      <form @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
+      <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <np-status></np-status>
         <np-status-history></np-status-history>
@@ -79,7 +79,7 @@ export class DemoSdk extends LitElement {
         ></np-passkey-conditional>
         <np-email-auth email=${this.email} name="aze" id="aze"></np-email-auth>
         <np-passkey-register token=${this.token}></np-passkey-register>
-      </form>
+      </div>
     `;
   }
 }
