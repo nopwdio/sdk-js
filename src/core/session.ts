@@ -1,5 +1,13 @@
 import { endpoint } from "../internal/api/endpoint.js";
-import { AbortError, NetworkError, TooManyRequestsError } from "../internal/api/errors.js";
+import {
+  AbortError,
+  BadRequestError,
+  ForbiddenError,
+  NetworkError,
+  NotFoundError,
+  TooManyRequestsError,
+  UnauthorizedError,
+} from "../internal/api/errors.js";
 import { generateKey, sign } from "../internal/crypto/ecdsa.js";
 import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
 
@@ -192,9 +200,11 @@ const refreshSession = async function (): Promise<Session | null> {
       return null;
     }
 
+    /*
     if (session.expires_at < now || session.used_at + session.idle_timeout < now) {
       throw new Error("expired session"); // go to catch
     }
+    */
 
     const challenge = decodeFromSafe64(session.next_challenge);
     const signature = await sign(challenge, session.private_key);
@@ -231,9 +241,10 @@ const refreshSession = async function (): Promise<Session | null> {
       throw e;
     }
 
+    /*
     const db = await getNopwdDb();
     await deleteItem(db, "sessions", "current");
-
+*/
     return null;
   }
 };
