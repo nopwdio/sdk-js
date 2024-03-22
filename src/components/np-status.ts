@@ -25,7 +25,9 @@ const UPDATE_DURATION = 2000;
  * @slot - The default label.
  * @slot operational - all services are working.
  * @slot disrupted - some error occured last 24h.
- * * @slot down - an error occured no success since last hour.
+ * @slot down - no success since last hour.
+ * @slot nodata - not enough data to get an accurate status.
+ * @slot offline - can't connect to the service status.
  *
  * @csspart link - The component's link wrapper.
  */

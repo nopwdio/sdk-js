@@ -200,11 +200,9 @@ const refreshSession = async function (): Promise<Session | null> {
       return null;
     }
 
-    /*
     if (session.expires_at < now || session.used_at + session.idle_timeout < now) {
       throw new Error("expired session"); // go to catch
     }
-    */
 
     const challenge = decodeFromSafe64(session.next_challenge);
     const signature = await sign(challenge, session.private_key);
@@ -241,10 +239,9 @@ const refreshSession = async function (): Promise<Session | null> {
       throw e;
     }
 
-    /*
     const db = await getNopwdDb();
     await deleteItem(db, "sessions", "current");
-*/
+
     return null;
   }
 };
