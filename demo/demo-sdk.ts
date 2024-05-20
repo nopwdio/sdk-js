@@ -79,7 +79,25 @@ export class DemoSdk extends LitElement {
         ></np-passkey-conditional>
         <np-email-auth email=${this.email} name="aze" id="aze"></np-email-auth>
         <np-passkey-register token=${this.token}></np-passkey-register>
+        <np-test open></np-test>
       </div>
     `;
+  }
+}
+
+@customElement("np-test")
+export class NpTest extends LitElement {
+  toggle() {
+    this.hasAttribute("open") ? this.removeAttribute("open") : this.setAttribute("open", "");
+  }
+
+  render() {
+    return html`<button @click=${this.toggle}>toggle</button>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "np-test": NpTest;
   }
 }

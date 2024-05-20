@@ -235,14 +235,13 @@ const refreshSession = async function (): Promise<Session | null> {
       suggest_passkeys: (await isWebauthnSupported()) && !session.created_with.includes("webauthn"),
     };
   } catch (e) {
-    if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
-      throw e;
+    if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
+      const db = await getNopwdDb();
+      await deleteItem(db, "sessions", "current");
+      return null;
     }
 
-    const db = await getNopwdDb();
-    await deleteItem(db, "sessions", "current");
-
-    return null;
+    throw e;
   }
 };
 

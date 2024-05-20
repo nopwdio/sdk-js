@@ -20,4 +20,12 @@ export default css`
   form:has(np-logout[state="loggedout"]) h1 {
     color: red;
   }
+
+  h1 {
+    color: blue;
+  }
+
+  :has(np-test[open]) h1 {
+    color: red;
+  }
 `;
