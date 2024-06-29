@@ -201,7 +201,9 @@ const refreshSession = async function (): Promise<Session | null> {
     }
 
     if (session.expires_at < now || session.used_at + session.idle_timeout < now) {
-      throw new Error("expired session"); // go to catch
+      const db = await getNopwdDb();
+      await deleteItem(db, "sessions", "current");
+      return null;
     }
 
     const challenge = decodeFromSafe64(session.next_challenge);
