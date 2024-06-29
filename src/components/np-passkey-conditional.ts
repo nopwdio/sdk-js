@@ -101,6 +101,7 @@ export class NpPasskeyConditional extends LitElement {
       this.dispatchLoginEvent(session);
       this.resetState(this.resetDuration);
     } catch (e: any) {
+      console.log(e);
       if (e instanceof AbortError) {
         return this.resetState();
       }
