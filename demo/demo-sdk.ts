@@ -7,6 +7,7 @@ import "../src/components/np-email-auth.js";
 import "../src/components/np-logout.js";
 import "../src/components/np-status.js";
 import "../src/components/np-status-history.js";
+import "../src/components/np-auth.js";
 
 import { Session, get, revoke } from "../src/core/session.js";
 
@@ -67,8 +68,7 @@ export class DemoSdk extends LitElement {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
-        <np-status></np-status>
-        <np-status-history></np-status-history>
+        <np-auth></np-auth>
         <button @click=${() => this.stream()}>stream</button>
         <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>

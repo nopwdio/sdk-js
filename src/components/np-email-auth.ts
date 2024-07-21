@@ -56,6 +56,11 @@ export class NpEmailLogin extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+
+    if ((await get()) !== null) {
+      this.state = State.LOGGEDIN;
+    }
+
     this.handleCallbackCodeIfNeeded();
   }
 
@@ -111,8 +116,6 @@ export class NpEmailLogin extends LitElement {
       const session = await create(token, this.lifetime, this.idletimeout);
 
       this.state = State.LOGGEDIN;
-      this.resetState(this.resetDuration);
-
       this.dispatchLoginEvent(session);
     } catch (e: any) {
       if (e instanceof AbortError) {
