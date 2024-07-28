@@ -178,7 +178,7 @@ export class NpPasskeyConditional extends LitElement {
         .value=${this.value}
         placeholder=${this.placeholder}
         id=${this.id}
-        autocomplete="webauthn email username"
+        autocomplete="username webauthn"
         enterkeyhint=${this.enterkeyhint}
         part="input"
       />
