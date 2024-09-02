@@ -69,35 +69,8 @@ export class DemoSdk extends LitElement {
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <np-auth></np-auth>
-        <button @click=${() => this.stream()}>stream</button>
-        <button @click=${() => this.refresh()}>refresh</button>
         <np-logout></np-logout>
-        <np-passkey-conditional
-          id="aze"
-          @input=${this.onInput}
-          sessionlifetime="3600"
-        ></np-passkey-conditional>
-        <np-email-auth email=${this.email} name="aze" id="aze"></np-email-auth>
-        <np-passkey-register token=${this.token}></np-passkey-register>
-        <np-test open></np-test>
       </div>
     `;
-  }
-}
-
-@customElement("np-test")
-export class NpTest extends LitElement {
-  toggle() {
-    this.hasAttribute("open") ? this.removeAttribute("open") : this.setAttribute("open", "");
-  }
-
-  render() {
-    return html`<button @click=${this.toggle}>toggle</button>`;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "np-test": NpTest;
   }
 }

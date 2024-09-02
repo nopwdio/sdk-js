@@ -7,6 +7,12 @@ export default css`
     flex-flow: column;
   }
 
+  div {
+    display: flex;
+    flex-flow: column;
+    gap: 1em;
+  }
+
   form {
     display: flex;
     border: 1px solid black;

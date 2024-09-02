@@ -2,7 +2,30 @@ import { css } from "lit";
 
 export default css`
   :host {
+    --theme-color: var(--np-core-color-black);
+  }
+
+  :host {
     display: flex;
+    border: solid var(--theme-color) var(--np-core-border-width-xs);
+    border-radius: var(--np-core-border-radius-m);
+    overflow: hidden;
+  }
+
+  :host([state="authenticated"]) {
+    --theme-color: var(--np-core-color-green-m);
+  }
+
+  input,
+  button {
+    padding: var(--np-core-padding-s);
+    font-size: var(--np-core-font-size-m);
+    border: none;
+  }
+
+  button {
+    color: white;
+    background-color: var(--theme-color);
   }
 
   :host {
