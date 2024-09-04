@@ -4,7 +4,7 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { input } from "../internal/styles/semantic.styles.js";
 import styles from "./np-auth.styles.js";
-import { create, get, revoke } from "../core/session.js";
+import { create, get, revoke, Session } from "../core/session.js";
 import {
   arrowRight,
   check,
@@ -16,6 +16,7 @@ import {
 import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
 import {
   getChallenge,
+  isWebauthnSupported,
   signChallenge,
   startConditional,
   verifySignature,
@@ -31,25 +32,14 @@ enum Event {
 }
 
 enum State {
-  UNKNOWN = "unknown",
   READY = "ready",
-  AUTHENTICATING = "authenticating",
-  SENT = "sent",
-  AUTHENTICATED = "authenticated",
-  ERROR = "error",
-}
-
-enum State2 {
-  SESSION_VERIFYING = "session:verifying",
-  SESSION_REVOKING = "session:revoking",
   PASSKEYS_INITIALIZING = "passkeys:initializing",
-  AUTHENTICATING = "passkeys:authenticating",
+  PASSKEYS_VERIFYING = "passkeys:verifying",
   EMAIL_SENDING = "email:link:sending",
   EMAIL_SENT = "email:link:sent",
   EMAIL_RETRY = "email:link:retry",
   EMAIL_VERIFYING = "email:link:verifying",
   AUTHENTICATED = "authenticated",
-  UNAUTHENTICATED = "unauthenticated",
   ERROR = "error",
 }
 
@@ -57,7 +47,7 @@ enum State2 {
 export class NpAuth extends LitElement {
   static styles = [core, styles];
 
-  @property({ reflect: true }) state: State = State.INITIALIZING;
+  @property({ reflect: true }) state: State = State.READY;
   @property({ type: String }) placeholder: string = "Your email";
   @property({ type: Number }) lifetime?: number;
   @property({ type: Number }) idletimeout?: number;
@@ -68,74 +58,76 @@ export class NpAuth extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    try {
-      if (hasCallbackCode()) {
-        this.state = State.INITIALIZING;
-        const token = await handleCallbackCode();
-        await create(token, this.lifetime, this.idletimeout);
-        this.state = State.AUTHENTICATED;
-        return;
-      }
 
-      this.startConditionalUi();
+    await this.handleCallbackIfNeeded();
+    await this.startConditionalUI();
+  }
+
+  async handleCallbackIfNeeded() {
+    if (!hasCallbackCode()) {
+      this.state = State.READY;
+      return false;
+    }
+
+    try {
+      this.state = State.EMAIL_VERIFYING;
+      const token = await handleCallbackCode();
+      await create(token, this.lifetime, this.idletimeout);
+      this.state = State.AUTHENTICATED;
+      return true;
     } catch (e) {
       console.log(e);
       this.state = State.ERROR;
       await wait(3000);
       this.state = State.READY;
+      return false;
     }
   }
 
-  async initialize() {}
+  async startConditionalUI() {
+    if (!(await isWebauthnSupported())) {
+      return false;
+    }
+
+    for (let i = 0; i <= 20; i++) {
+      try {
+        this.state = State.PASSKEYS_INITIALIZING;
+        const { challenge } = await getChallenge();
+        this.state = State.READY;
+        const auth = await signChallenge(challenge);
+        this.state = State.PASSKEYS_VERIFYING;
+        const token = await verifySignature(auth);
+        const session = await create(token, this.lifetime, this.idletimeout);
+        this.state = State.AUTHENTICATED;
+        await wait(3000);
+      } catch (e) {
+        await wait(1000);
+      }
+    }
+
+    this.state = State.READY;
+    return false;
+  }
+
+  async signalSuccess(session: Session) {}
+
+  async signalError() {}
 
   async loginWithEmail() {
     if (this.value === undefined || this.state !== State.READY) {
       return;
     }
     try {
-      this.state = State.BUSY;
+      this.state = State.EMAIL_SENDING;
       this.abort?.abort();
       this.abort = new AbortController();
       await request({ email: this.value }, this.abort.signal);
-      this.state = State.SENT;
+      this.state = State.EMAIL_SENT;
     } catch (e) {
       console.log(e);
       this.state = State.ERROR;
       await wait(3000);
       this.state = State.READY;
-    }
-  }
-
-  async startConditionalUi() {
-    this.state = State.BUSY;
-    const { challenge } = await getChallenge();
-    this.state = State.READY;
-    const auth = await signChallenge(challenge);
-
-    this.state = State.BUSY;
-    const token = await verifySignature(auth);
-    const session = await create(token, this.lifetime, this.idletimeout);
-    this.state = State.AUTHENTICATED;
-
-    return session;
-
-    for (let i = 0; i < 20; i++) {
-      try {
-        this.state = State.BUSY;
-        const { challenge } = await getChallenge();
-        this.state = State.READY;
-        const auth = await signChallenge(challenge);
-
-        this.state = State.BUSY;
-        const token = await verifySignature(auth);
-        await create(token, this.lifetime, this.idletimeout);
-        this.state = State.AUTHENTICATED;
-      } catch (e) {
-        console.log(e);
-        if (e instanceof NetworkError) {
-          await wait(i * 1000);
-        }
-      }
     }
   }
 
@@ -146,13 +138,10 @@ export class NpAuth extends LitElement {
       return;
     }
 
+    // TODO : if old.length === 0 && new.length >= 3 --> autocomplete probable --> submit
     console.log("old value:", this.value);
     this.value = input.value;
     console.log("new value:", this.value);
-
-    if (this.state === State.SENT || this.state === State.AUTHENTICATED) {
-      this.state = State.READY;
-    }
   }
 
   onKeyUp(e: KeyboardEvent) {
@@ -168,10 +157,6 @@ export class NpAuth extends LitElement {
   render() {
     console.log(this.state);
 
-    if (this.state === State.AUTHENTICATED) {
-      return html`<button @click=${this.logout}>Logout</button>`;
-    }
-
     return html`
       <input
         type="email"
@@ -182,18 +167,22 @@ export class NpAuth extends LitElement {
         part="input"
       />
       <button @click=${this.loginWithEmail}>
-        ${this.state === State.INITIALIZING
+        ${this.state === State.EMAIL_SENDING
           ? html`${loading}`
-          : this.state === State.BUSY
-          ? html`${loading}`
-          : this.state === State.SENT
+          : this.state === State.EMAIL_SENT
           ? html`${envelope}`
-          : this.state === State.ERROR
-          ? html`${warning}`
+          : this.state === State.EMAIL_VERIFYING
+          ? html`${loading}`
+          : this.state === State.PASSKEYS_INITIALIZING
+          ? html`${arrowRight}`
+          : this.state === State.PASSKEYS_VERIFYING
+          ? html`${loading}`
           : this.state === State.AUTHENTICATED
           ? html`${check}`
           : this.state === State.READY
           ? html`${arrowRight}`
+          : this.state === State.ERROR
+          ? html`${warning}`
           : html``}
       </button>
     `;
