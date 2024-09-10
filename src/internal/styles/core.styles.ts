@@ -116,4 +116,29 @@ export const core = css`
   :host {
     --np-core-icon-gap: var(--np-core-padding-s);
   }
+
+  @keyframes scale {
+    0% {
+      transform: scale(0.5);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes bounce {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-0.4em);
+    }
+    60% {
+      transform: translateY(-0.2em);
+    }
+  }
 `;

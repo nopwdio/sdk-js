@@ -60,7 +60,6 @@ const getNopwdDb = async function () {
  * @throws {NetworkError} when a connection error occured
  * @throws {InvalidTokenError} when the access token is malformed or expired
  */
-
 export const create = async function (
   token: string,
   lifetime?: number,

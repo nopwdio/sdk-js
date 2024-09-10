@@ -11,6 +11,7 @@ export default css`
     display: flex;
     flex-flow: column;
     gap: 1em;
+    width: min(100%, 300px);
   }
 
   form {

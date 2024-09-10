@@ -15,6 +15,7 @@ esbuild.build({
         "./src/components/np-email-auth.ts",
         "./src/components/np-passkey-register.ts",
         "./src/components/np-passkey-conditional.ts",
+        "./src/components/np-login.ts",
         "./src/components/np-logout.ts",
         "./src/components/np-status.ts",
         "./src/components/np-status-history.ts",
