@@ -25,11 +25,11 @@ import { wait } from "../internal/util/wait.js";
 
 enum State {
   READY = "ready",
-  PASSKEYS_VERIFYING = "passkeys:verifying",
   EMAIL_SENDING = "email:link:sending",
   EMAIL_SENT = "email:link:sent",
   EMAIL_VERIFYING = "email:link:verifying",
   AUTHENTICATED = "authenticated",
+  PASSKEYS_VERIFYING = "passkeys:verifying",
   ERROR = "error",
 }
 
@@ -89,12 +89,10 @@ export class NpLogin extends LitElement {
     try {
       this.state = State.EMAIL_VERIFYING;
       const token = await handleCallbackCode();
-      await create(token, this.lifetime, this.idletimeout);
-      this.state = State.AUTHENTICATED;
-      return true;
+      const session = await create(token, this.lifetime, this.idletimeout);
+      await this.signalSuccess(session);
     } catch (e) {
       await this.signalError(e);
-      return false;
     }
   }
 
@@ -175,8 +173,6 @@ export class NpLogin extends LitElement {
   }
 
   render() {
-    console.log(this.state);
-
     return html`
       <input
         type="email"

@@ -18,7 +18,7 @@ export default css`
   }
 
   :host([state="email:verifying"]) {
-    --theme-color: var(--np-core-color-green-m);
+    --theme-color: var(--np-core-color-grey-m);
   }
 
   :host([state="error"]) {
@@ -36,6 +36,8 @@ export default css`
     padding: var(--np-core-padding-s);
 
     font-size: var(--np-core-font-size-m);
+
+    background-color: transparent;
   }
 
   input {
@@ -43,7 +45,6 @@ export default css`
   }
 
   button {
-    background-color: transparent;
     color: var(--theme-color);
     align-items: center;
   }
