@@ -12,9 +12,7 @@ esbuild.build({
     splitting: true,
     format: "esm",
     entryPoints: [
-        "./src/components/np-email-auth.ts",
         "./src/components/np-passkey-register.ts",
-        "./src/components/np-passkey-conditional.ts",
         "./src/components/np-login.ts",
         "./src/components/np-logout.ts",
         "./src/components/np-status.ts",
