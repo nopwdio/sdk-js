@@ -35,6 +35,10 @@ export const register = async function (token: string, signal?: AbortSignal) {
 
     const payload = getPayload(token);
 
+    if (payload.amr.includes("webauthn")) {
+      throw new Error("A passkey already exists for this website");
+    }
+
     if (payload.exp < Date.now() / 1000) {
       throw new InvalidTokenError();
     }

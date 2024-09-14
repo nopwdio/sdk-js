@@ -114,15 +114,19 @@ export const core = css`
   }
 
   :host {
-    --np-core-icon-gap: var(--np-core-padding-s);
+    --np-core-animation-duration-xs: 100ms;
+    --np-core-animation-duration-s: 200ms;
+    --np-core-animation-duration-m: 400ms;
+    --np-core-animation-duration-l: 800ms;
+    --np-core-animation-duration-xl: 1600ms;
   }
 
   @keyframes scale {
     0% {
-      transform: scale(0.5);
+      transform: scale(1);
     }
     100% {
-      transform: scale(1);
+      transform: scale(0.5);
     }
   }
 
@@ -139,6 +143,17 @@ export const core = css`
     }
     60% {
       transform: translateY(-0.2em);
+    }
+  }
+
+  @keyframes glow {
+    50% {
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 `;

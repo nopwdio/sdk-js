@@ -2,13 +2,14 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { core } from "../internal/styles/core.styles.js";
+import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-login.styles.js";
 import {
   arrowRightCircle,
+  busy,
   checkCircle,
   envelope,
   exclamationCircle,
-  loading,
 } from "../internal/styles/icons.styles.js";
 
 import { handleCallbackCode, hasCallbackCode, request } from "../core/email.js";
@@ -46,7 +47,7 @@ enum State {
  * */
 @customElement("np-login")
 export class NpLogin extends LitElement {
-  static styles = [core, styles];
+  static styles = [core, component, styles];
 
   @property({ reflect: true }) state: State = State.READY;
   @property({ type: String }) placeholder: string = "Your email";
@@ -185,13 +186,13 @@ export class NpLogin extends LitElement {
       />
       <button @click=${this.loginWithEmail} part="button">
         ${this.state === State.EMAIL_SENDING
-          ? html`${loading}`
+          ? html`${busy}`
           : this.state === State.EMAIL_SENT
           ? html`${envelope}`
           : this.state === State.EMAIL_VERIFYING
-          ? html`${loading}`
+          ? html`${busy}`
           : this.state === State.PASSKEYS_VERIFYING
-          ? html`${loading}`
+          ? html`${busy}`
           : this.state === State.AUTHENTICATED
           ? html`${checkCircle}`
           : this.state === State.READY

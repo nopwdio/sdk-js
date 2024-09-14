@@ -3,26 +3,18 @@ import { css } from "lit";
 export default css`
   :host {
     display: flex;
-    border: solid var(--theme-color) var(--np-core-border-width-xs);
-    border-radius: var(--np-core-border-radius-m);
     overflow: hidden;
-  }
 
-  :host,
-  :host([state="ready"]) {
-    --theme-color: var(--np-core-color-black);
+    border: solid var(--np-component-border-color) var(--np-component-border-width);
+    border-radius: var(--np-component-border-radius);
   }
 
   :host([state="authenticated"]) {
-    --theme-color: var(--np-core-color-green-m);
-  }
-
-  :host([state="email:verifying"]) {
-    --theme-color: var(--np-core-color-grey-m);
+    --np-component-border-color: var(--np-core-color-green-m);
   }
 
   :host([state="error"]) {
-    --theme-color: var(--np-core-color-red-m);
+    --np-component-border-color: var(--np-core-color-red-m);
   }
 
   input,
@@ -33,31 +25,19 @@ export default css`
     outline: none;
 
     margin: 0;
-    padding: var(--np-core-padding-s);
+    padding: var(--np-component-padding);
+    font-size: var(--np-component-font-size);
+    font-weight: var(--np-component-font-weight);
 
-    font-size: var(--np-core-font-size-m);
-
-    background-color: transparent;
+    background-color: var(--np-component-background-color);
   }
 
   input {
     flex-grow: 1;
+    color: var(--np-component-text-color);
   }
 
   button {
-    color: var(--theme-color);
-    align-items: center;
-  }
-
-  .icon {
-    width: var(--np-core-font-size-m);
-  }
-
-  .icon--envelope {
-    animation: bounce 1000ms ease-out 10;
-  }
-
-  .icon--loading {
-    animation: scale 300ms ease-out infinite alternate;
+    color: var(--np-component-border-color);
   }
 `;

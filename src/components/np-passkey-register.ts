@@ -1,9 +1,15 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
-import { button } from "../internal/styles/semantic.styles.js";
+import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-passkey-register.styles.js";
-import { loading, warning, checkSolid, fingerprint } from "../internal/styles/icons.styles.js";
+import {
+  warning,
+  checkSolid,
+  fingerprint,
+  busy,
+  exclamationCircle,
+} from "../internal/styles/icons.styles.js";
 
 import { AbortError, NetworkError, NoPwdError, UnauthorizedError } from "../internal/api/errors.js";
 import { register } from "../core/webauthn.js";
@@ -39,7 +45,7 @@ export class NpPasskeyRegister extends LitElement {
 
   @property({ type: Number }) resetDuration: number = 2000;
 
-  static styles = [core, button, styles];
+  static styles = [core, component, styles];
 
   private stateTimeoutId: number | null = null;
   private abort: AbortController | null = null;
@@ -141,10 +147,10 @@ export class NpPasskeyRegister extends LitElement {
       ${!this.state
         ? html`${fingerprint}<slot>Create a passkey</slot>`
         : this.state === State.REGISTERING
-        ? html`${loading}<slot name="registering">Creating...</slot>`
+        ? html`${busy}<slot name="registering">Creating...</slot>`
         : this.state === State.REGISTERED
         ? html`${checkSolid}<slot name="registered">Passkey created!</slot>`
-        : html`${warning}<slot name="error">Something went wrong</slot>`}
+        : html`${exclamationCircle}<slot name="error">Create a passkey</slot>`}
     </button>`;
   }
 }

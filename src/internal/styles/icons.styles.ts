@@ -109,6 +109,16 @@ export const circleSolid = svg`<svg
   <circle cx="12" cy="12" r="12" fill="currentColor" />
 </svg>`;
 
+export const busy = svg`<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  stroke-width="1.5"
+  class="icon icon--busy"
+>
+  <circle cx="12" cy="12" r="10" fill="transparent" stroke="currentColor" />
+</svg>`;
+
 export const exclamationCircle = svg`<svg
   xmlns="http://www.w3.org/2000/svg"
   fill="none"

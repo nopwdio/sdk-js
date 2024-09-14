@@ -5,43 +5,24 @@ export default css`
     display: flex;
   }
 
-  :host {
-    --button-background-color: var(--np-core-color-black);
-    --button-text-color: var(--np-core-color-white);
-  }
+  button {
+    display: flex;
+    flex-grow: 1;
 
-  /* button busy */
-  :host([state="registering"]) {
-    --button-background-color: transparent;
-    --button-text-color: var(--np-core-color-grey-m);
-  }
+    gap: var(--np-component-icon-gap);
+    justify-content: center;
+    align-items: center;
 
-  /* button success */
-  :host([state="registered"]) {
-    --button-background-color: var(--np-core-color-green-m);
-    --button-text-color: var(--np-core-color-white);
-  }
+    margin: 0;
+    padding: var(--np-component-padding);
 
-  /* button error */
-  :host([state="error"]) {
-    --button-background-color: var(--np-core-color-red-m);
-    --button-text-color: var(--np-core-color-white);
-  }
+    border: solid var(--np-component-border-color) var(--np-component-border-width);
+    border-radius: var(--np-component-border-radius);
 
-  .icon {
-    width: var(--np-core-font-size-m);
-  }
+    font-size: var(--np-component-font-size);
+    font-weight: var(--np-component-font-weight);
 
-  .icon--loading {
-    animation: scale 300ms ease-out infinite alternate;
-  }
-
-  @keyframes scale {
-    0% {
-      transform: scale(0.6);
-    }
-    100% {
-      transform: scale(1);
-    }
+    color: var(--np-component-text-color);
+    background-color: var(--np-component-background-color);
   }
 `;

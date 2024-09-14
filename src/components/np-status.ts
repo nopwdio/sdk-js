@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
-import { link } from "../internal/styles/semantic.styles.js";
+import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-status.styles.js";
 import { loading, warning, circleSolid, wifiOff } from "../internal/styles/icons.styles.js";
 
@@ -16,8 +16,6 @@ export enum State {
   NODATA = "nodata",
   OFFLINE = "offline",
 }
-
-const UPDATE_DURATION = 2000;
 
 /**
  * @summary Nopwd Status component
@@ -43,7 +41,6 @@ export class NpStatus extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    this.style.setProperty("--update-duration", `${UPDATE_DURATION}ms`);
     this.connect();
   }
 
@@ -81,7 +78,6 @@ export class NpStatus extends LitElement {
       }
 
       this.state = State.OPERATIONAL;
-      this.signalUpdate();
     };
 
     this.ws.onclose = async () => {
@@ -97,12 +93,6 @@ export class NpStatus extends LitElement {
   private disconnect() {
     this.state = State.OFFLINE;
     this.ws?.close();
-  }
-
-  private signalUpdate() {
-    window.clearTimeout(this.updateTimeoutId);
-    this.setAttribute("updated", "");
-    window.setTimeout(() => this.removeAttribute("updated"), UPDATE_DURATION);
   }
 
   // Render the UI as a function of component state
@@ -122,7 +112,7 @@ export class NpStatus extends LitElement {
     </a>`;
   }
 
-  static styles = [core, link, styles];
+  static styles = [core, component, styles];
 }
 
 declare global {

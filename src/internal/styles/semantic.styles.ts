@@ -1,111 +1,34 @@
 import { css } from "lit";
 
-export const link = css`
-  a {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    outline: none;
+export const component = css`
+  :host {
+    --np-component-padding: var(--np-core-padding-s);
 
-    /** better center text */
-    line-height: 1em;
+    --np-component-border-radius: var(--np-core-border-radius-s);
+    --np-component-border-width: var(--np-core-border-width-xs);
 
-    /* common style */
-    text-decoration: none;
-    gap: var(--np-core-icon-gap);
-    font-size: var(--np-core-font-size-m);
-    font-weight: var(--np-core-font-weight-l);
+    --np-component-font-size: var(--np-core-font-size-m);
+    --np-component-font-weight: var(--np-core-font-weight-l);
 
-    /* we expose link variables */
-    color: var(--link-text-color);
-
-    transition: all 100ms ease;
+    --np-component-border-width: var(--np-core-border-width-xs);
+    --np-component-icon-gap: var(--np-core-padding-s);
   }
 
-  a .icon {
-    flex-shrink: 0;
-    width: var(--np-core-font-size-m);
-  }
-`;
-
-export const button = css`
-  button {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    outline: none;
-
-    /** better center text */
-    line-height: 1em;
-
-    /* common style */
-    gap: var(--np-core-icon-gap);
-    padding: var(--np-core-padding-s) var(--np-core-padding-l);
-    font-size: var(--np-core-font-size-m);
-    font-weight: var(--np-core-font-weight-l);
-    border: solid transparent var(--core-border-width-xs);
-    border-radius: var(--np-core-border-radius-s);
-
-    /* we expose button variable */
-    color: var(--button-text-color);
-    border-color: var(--button-border-color);
-    background: var(--button-background-color);
-
-    transition: all 100ms ease;
+  :host {
+    --np-component-border-color: var(--np-core-color-black);
+    --np-component-text-color: var(--np-core-color-black);
+    --np-component-background-color: var(--np-core-color-white);
   }
 
-  /* avoid icon to shrink */
-  button .icon {
-    flex-shrink: 0;
+  .icon {
+    width: 1em;
   }
 
-  :host([state="error"]) {
-    animation: shake 300ms 1 linear;
+  .icon--busy {
+    animation: scale var(--np-core-animation-duration-m) ease-out infinite alternate;
   }
 
-  @keyframes shake {
-    0% {
-      -webkit-transform: translate(20px);
-    }
-    20% {
-      -webkit-transform: translate(-20px);
-    }
-    40% {
-      -webkit-transform: translate(10px);
-    }
-    60% {
-      -webkit-transform: translate(-10px);
-    }
-    80% {
-      -webkit-transform: translate(5px);
-    }
-    100% {
-      -webkit-transform: translate(0px);
-    }
-  }
-`;
-
-export const input = css`
-  input {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    outline: none;
-
-    /* common style */
-    padding: var(--np-core-padding-s);
-    font-size: var(--np-core-font-size-m);
-    border: solid transparent var(--np-core-border-width-xs);
-    border-radius: var(--np-core-border-radius-s);
-
-    /* we expose input variables */
-    color: var(--input-text-color);
-    border-color: var(--input-border-color);
-    background: var(--input-background-color);
-
-    transition: all 100ms ease;
+  .icon--envelope {
+    animation: bounce var(--np-core-animation-duration-l) ease-out 10;
   }
 `;

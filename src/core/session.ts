@@ -41,7 +41,7 @@ export interface Session {
   token: string;
   token_payload: TokenPayload;
 
-  suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser support it
+  suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser supports it
 }
 
 const getNopwdDb = async function () {
