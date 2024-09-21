@@ -88,8 +88,10 @@ export class NpLogin extends LitElement {
       const token = await handleCallbackCode();
       const session = await create(token, this.lifetime, this.idletimeout);
       await this.signalSuccess(session);
+      return true;
     } catch (e) {
       await this.signalError(e);
+      return false;
     }
   }
 
@@ -101,6 +103,7 @@ export class NpLogin extends LitElement {
 
     for (let i = 0; i <= 20; i++) {
       try {
+        this.passkeys = undefined;
         const { challenge } = await getChallenge();
         this.passkeys = true;
         const auth = await signChallenge(challenge);
@@ -108,6 +111,7 @@ export class NpLogin extends LitElement {
         const token = await verifySignature(auth);
         const session = await create(token, this.lifetime, this.idletimeout);
         await this.signalSuccess(session);
+        return true;
       } catch (e) {
         await this.signalError(e);
       }
