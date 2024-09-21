@@ -25,4 +25,10 @@ export default css`
     color: var(--np-component-text-color);
     background-color: var(--np-component-background-color);
   }
+
+  :host {
+    --np-component-border-color: var(--np-core-color-black);
+    --np-component-text-color: var(--np-core-color-white);
+    --np-component-background-color: var(--np-core-color-black);
+  }
 `;

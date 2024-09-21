@@ -4,7 +4,6 @@ import { core } from "../internal/styles/core.styles.js";
 import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-passkey-register.styles.js";
 import {
-  warning,
   checkSolid,
   fingerprint,
   busy,

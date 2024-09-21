@@ -6,6 +6,7 @@ import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-login.styles.js";
 import {
   arrowRightCircle,
+  arrowRightCircleSolid,
   busy,
   checkCircle,
   envelope,
@@ -25,7 +26,6 @@ import { create, Session } from "../core/session.js";
 import { wait } from "../internal/util/wait.js";
 
 enum State {
-  READY = "ready",
   EMAIL_SENDING = "email:link:sending",
   EMAIL_SENT = "email:link:sent",
   EMAIL_VERIFYING = "email:link:verifying",
@@ -47,17 +47,14 @@ enum State {
  * */
 @customElement("np-login")
 export class NpLogin extends LitElement {
-  static styles = [core, component, styles];
-
-  @property({ reflect: true }) state: State = State.READY;
+  @property({ reflect: true }) state?: State;
+  @property({ reflect: true, type: Boolean }) passkeys?: boolean;
   @property({ type: String }) placeholder: string = "Your email";
   @property({ type: String }) id: string = "input";
   @property({ type: Number }) lifetime?: number;
   @property({ type: Number }) idletimeout?: number;
 
   @property({ type: String }) value: string = "";
-
-  private abort: AbortController | null = null;
 
   async connectedCallback() {
     super.connectedCallback();
@@ -67,7 +64,7 @@ export class NpLogin extends LitElement {
   }
 
   async loginWithEmail() {
-    if ((this.state !== State.READY && this.state !== State.EMAIL_SENT) || this.value.length < 3) {
+    if ((this.state !== undefined && this.state !== State.EMAIL_SENT) || this.value.length < 3) {
       return;
     }
 
@@ -83,7 +80,6 @@ export class NpLogin extends LitElement {
 
   private async handleCallbackIfNeeded() {
     if (!hasCallbackCode()) {
-      this.state = State.READY;
       return false;
     }
 
@@ -99,12 +95,14 @@ export class NpLogin extends LitElement {
 
   private async startConditionalUI() {
     if (!(await isWebauthnSupported())) {
+      this.passkeys = false;
       return false;
     }
 
     for (let i = 0; i <= 20; i++) {
       try {
         const { challenge } = await getChallenge();
+        this.passkeys = true;
         const auth = await signChallenge(challenge);
         this.state = State.PASSKEYS_VERIFYING;
         const token = await verifySignature(auth);
@@ -115,7 +113,6 @@ export class NpLogin extends LitElement {
       }
     }
 
-    this.state = State.READY;
     return false;
   }
 
@@ -132,7 +129,7 @@ export class NpLogin extends LitElement {
     );
 
     await wait(3000);
-    this.state = State.READY;
+    this.state = undefined;
   }
 
   private async signalError(e: unknown) {
@@ -148,7 +145,7 @@ export class NpLogin extends LitElement {
     );
 
     await wait(1000);
-    this.state = State.READY;
+    this.state = undefined;
   }
 
   private async onInput() {
@@ -195,14 +192,14 @@ export class NpLogin extends LitElement {
           ? html`${busy}`
           : this.state === State.AUTHENTICATED
           ? html`${checkCircle}`
-          : this.state === State.READY
-          ? html`${arrowRightCircle}`
           : this.state === State.ERROR
           ? html`${exclamationCircle}`
-          : html``}
+          : html`${this.passkeys ? arrowRightCircleSolid : arrowRightCircle}`}
       </button>
     `;
   }
+
+  static styles = [core, component, styles];
 }
 
 declare global {

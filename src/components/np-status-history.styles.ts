@@ -3,7 +3,7 @@ import { css } from "lit";
 export default css`
   :host {
     display: flex;
-    gap: var(--np-core-padding-s);
+    gap: var(--np-component-padding);
     overflow-x: scroll;
   }
 
@@ -12,9 +12,9 @@ export default css`
   }
 
   span {
-    border-radius: var(--np-core-padding-xs);
-    min-width: var(--np-core-padding-m);
-    min-height: var(--np-core-padding-m);
+    border-radius: var(--np-component-border-radius);
+    min-width: var(--np-component-font-size);
+    min-height: var(--np-component-font-size);
 
     flex: 1;
   }
@@ -33,15 +33,6 @@ export default css`
   }
 
   span.operational:nth-child(1) {
-    animation: glow 3000ms ease-out infinite alternate;
-  }
-
-  @keyframes glow {
-    50% {
-      opacity: 0.4;
-    }
-    100% {
-      opacity: 1;
-    }
+    animation: glow var(--np-core-animation-duration-xl) ease-in-out infinite alternate;
   }
 `;

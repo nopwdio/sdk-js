@@ -1,6 +1,6 @@
 {
   "name": "@nopwdio/sdk-js",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "license": "MIT",
   "author": "Adrien Pinet",
   "contributors": [
@@ -29,7 +29,7 @@
   "scripts": {
     "clean": "rm -fr dist cdn",
     "test": "web-test-runner src/**/*.spec.ts --node-resolve --playwright --browsers webkit",
-    "dev": "cp ./demo/index.html dist && esbuild ./demo/demo-sdk.ts --bundle --outdir=dist --servedir=dist --serve=4321 --watch",
+    "dev": "mkdir -p dist && cp ./demo/index.html dist && esbuild ./demo/demo-sdk.ts --bundle --outdir=dist --servedir=dist --serve=4321 --watch",
     "build:cdn": "node ./build.cdn.js",
     "build:dist": "tsc",
     "build": "npm run clean && npm run build:cdn && npm run build:dist"

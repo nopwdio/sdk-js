@@ -17,7 +17,7 @@ export const component = css`
   :host {
     --np-component-border-color: var(--np-core-color-black);
     --np-component-text-color: var(--np-core-color-black);
-    --np-component-background-color: var(--np-core-color-white);
+    --np-component-background-color: transparent;
   }
 
   .icon {

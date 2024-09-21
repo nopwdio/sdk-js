@@ -4,6 +4,7 @@ import { core } from "../internal/styles/core.styles.js";
 import styles from "./np-status-history.styles.js";
 import { wait } from "../internal/util/wait.js";
 import { Status } from "../core/status.js";
+import { component } from "../internal/styles/semantic.styles.js";
 
 @customElement("np-status-history")
 export class NpStatusHistory extends LitElement {
@@ -65,7 +66,7 @@ export class NpStatusHistory extends LitElement {
       }
     };
   }
-  static styles = [core, styles];
+  static styles = [core, component, styles];
 }
 
 declare global {

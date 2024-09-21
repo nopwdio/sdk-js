@@ -19,7 +19,6 @@ export default css`
 
     font-size: var(--np-component-font-size);
     font-weight: var(--np-component-font-weight);
-    font-family: initial;
 
     color: var(--np-component-text-color);
     background-color: var(--np-component-background-color);
@@ -60,14 +59,5 @@ export default css`
 
   .icon {
     font-size: 0.7em;
-  }
-
-  @keyframes scale {
-    0% {
-      transform: scale(0.6);
-    }
-    100% {
-      transform: scale(1);
-    }
   }
 `;

@@ -3,17 +3,10 @@ import { customElement, property } from "lit/decorators.js";
 import { core } from "../internal/styles/core.styles.js";
 import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-logout.styles.js";
-import {
-  loading,
-  warning,
-  checkSolid,
-  busy,
-  exclamationCircle,
-  checkCircle,
-} from "../internal/styles/icons.styles.js";
+import { busy, exclamationCircle, checkCircle } from "../internal/styles/icons.styles.js";
 
 import { AbortError, NoPwdError } from "../internal/api/errors.js";
-import { get, revoke } from "../core/session.js";
+import { revoke } from "../core/session.js";
 
 export enum State {
   LOGGINGOUT = "loggingout", // revoking session
@@ -49,11 +42,6 @@ export class NpLogout extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    const session = await get();
-
-    if (session === null) {
-      this.dispatchLogoutEvent();
-    }
   }
 
   async disconnectedCallback() {
@@ -138,10 +126,10 @@ export class NpLogout extends LitElement {
       ${!this.state
         ? html`<slot>Logout</slot>`
         : this.state === State.LOGGINGOUT
-        ? html`${busy}<slot name="loggingout">Logging out</slot>`
+        ? html`${busy}<slot name="loggingout">Logging out...</slot>`
         : this.state === State.LOGGEDOUT
-        ? html`${checkCircle}<slot name="loggedout">Logged out</slot>`
-        : html`${exclamationCircle}<slot name="error">Something went wrong</slot>`}
+        ? html`${checkCircle}<slot name="loggedout">Logged out!</slot>`
+        : html`${exclamationCircle}<slot name="error">Logout</slot>`}
     </button>`;
   }
 
