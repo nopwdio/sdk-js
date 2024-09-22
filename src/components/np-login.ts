@@ -25,7 +25,7 @@ import { create, get, Session } from "../core/session.js";
 
 import { wait } from "../internal/util/wait.js";
 
-enum State {
+export enum State {
   EMAIL_SENDING = "email:link:sending", // sending an email link
   EMAIL_SENT = "email:link:sent", // the email link has been sent
   EMAIL_VERIFYING = "email:link:verifying", // verifying the callback code from the email link
