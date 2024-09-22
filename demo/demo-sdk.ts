@@ -21,6 +21,10 @@ declare global {
 export class DemoSdk extends LitElement {
   static styles = [styles];
 
+  connectedCallback(): void {
+    super.connectedCallback();
+  }
+
   private async onAuthenticated(e: CustomEvent<Session>) {
     console.log(e.detail);
   }

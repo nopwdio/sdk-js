@@ -21,17 +21,17 @@ import {
   verifySignature,
 } from "../core/webauthn.js";
 
-import { create, Session } from "../core/session.js";
+import { create, get, Session } from "../core/session.js";
 
 import { wait } from "../internal/util/wait.js";
 
 enum State {
-  EMAIL_SENDING = "email:link:sending",
-  EMAIL_SENT = "email:link:sent",
-  EMAIL_VERIFYING = "email:link:verifying",
-  AUTHENTICATED = "authenticated",
-  PASSKEYS_VERIFYING = "passkeys:verifying",
-  ERROR = "error",
+  EMAIL_SENDING = "email:link:sending", // sending an email link
+  EMAIL_SENT = "email:link:sent", // the email link has been sent
+  EMAIL_VERIFYING = "email:link:verifying", // verifying the callback code from the email link
+  AUTHENTICATED = "authenticated", // the user is authenticated (using email or passkey)
+  PASSKEYS_VERIFYING = "passkeys:verifying", // the user is anthenticating with passkey
+  ERROR = "error", // an error occured
 }
 
 /**
@@ -120,6 +120,10 @@ export class NpLogin extends LitElement {
     return false;
   }
 
+  async getSession() {
+    return get();
+  }
+
   private async signalSuccess(session: Session) {
     this.state = State.AUTHENTICATED;
 
@@ -162,6 +166,10 @@ export class NpLogin extends LitElement {
     const oldValue = this.value;
     this.value = input.value;
 
+    if (this.state === State.EMAIL_SENT) {
+      this.state = undefined;
+    }
+
     // capturing copy/past or password manager
     if (oldValue.length === 0 && this.value.length >= 3) {
       this.loginWithEmail();
@@ -180,6 +188,7 @@ export class NpLogin extends LitElement {
         type="email"
         @input=${this.onInput}
         @keyup=${this.onKeyUp}
+        value=${this.value}
         placeholder=${this.placeholder}
         id="${this.id}"
         autocomplete="username webauthn"

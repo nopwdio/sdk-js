@@ -7,6 +7,7 @@ import { busy, exclamationCircle, checkCircle } from "../internal/styles/icons.s
 
 import { AbortError, NoPwdError } from "../internal/api/errors.js";
 import { revoke } from "../core/session.js";
+import { wait } from "../internal/util/wait.js";
 
 export enum State {
   LOGGINGOUT = "loggingout", // revoking session
@@ -31,14 +32,8 @@ export class NpLogout extends LitElement {
   /** The component's state. */
   @property({ reflect: true }) state?: State = undefined;
 
-  /** The user's access token. */
-  @property() token?: string = undefined;
-
   /** The reset state duration after success or error */
   @property({ type: Number }) resetDuration: number = 2000;
-
-  private stateTimeoutId: number | null = null;
-  private abort: AbortController | null = null;
 
   async connectedCallback() {
     super.connectedCallback();
@@ -46,11 +41,6 @@ export class NpLogout extends LitElement {
 
   async disconnectedCallback() {
     super.disconnectedCallback();
-    this.cancel();
-  }
-
-  private async onClick() {
-    await this.logout();
   }
 
   async logout() {
@@ -62,44 +52,19 @@ export class NpLogout extends LitElement {
       this.state = State.LOGGINGOUT;
       await revoke();
       this.state = State.LOGGEDOUT;
-      this.resetState(this.resetDuration);
-      this.dispatchLogoutEvent();
+      await this.signalSuccess();
     } catch (e: any) {
-      if (e instanceof AbortError) {
-        return this.resetState();
-      }
-
-      this.state = State.ERROR;
-      this.resetState(this.resetDuration);
-      this.dispatchErrorEvent(e);
-    } finally {
-      this.abort = null;
+      return this.signalError(e);
     }
   }
 
-  cancel() {
-    if (this.abort) {
-      this.abort.abort();
-      this.abort = null;
-    }
-
-    this.resetState();
+  private async onClick() {
+    await this.logout();
   }
 
-  private resetState(ms: number = 0) {
-    return new Promise((resolve) => {
-      if (this.stateTimeoutId) {
-        window.clearTimeout(this.stateTimeoutId);
-        this.stateTimeoutId = null;
-      }
+  private async signalSuccess() {
+    this.state = State.LOGGEDOUT;
 
-      this.stateTimeoutId = window.setTimeout(() => {
-        this.state = undefined;
-      }, ms);
-    });
-  }
-
-  private dispatchLogoutEvent() {
     this.dispatchEvent(
       new CustomEvent("np:logout", {
         composed: true,
@@ -107,9 +72,14 @@ export class NpLogout extends LitElement {
         bubbles: true,
       })
     );
+
+    await wait(this.resetDuration);
+    this.state = undefined;
   }
 
-  private dispatchErrorEvent(e: NoPwdError) {
+  private async signalError(e: unknown) {
+    this.state = State.ERROR;
+
     this.dispatchEvent(
       new CustomEvent("np:error", {
         composed: true,
@@ -118,6 +88,9 @@ export class NpLogout extends LitElement {
         detail: e,
       })
     );
+
+    await wait(this.resetDuration);
+    this.state = undefined;
   }
 
   // Render the UI as a function of component state
