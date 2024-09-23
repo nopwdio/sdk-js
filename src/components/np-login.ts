@@ -37,7 +37,7 @@ export enum State {
 /**
  * @summary Component allowing user authentication via a link sent by email
  * (magic-link) or Passkeys if an access key has been previously created
- * for this website (i.e. with the <np-passkey-register> component).
+ * for this website (using the <np-passkey-register> component).
  *
  * @event np:login - Emitted when the session has been created.
  * @event np:error - Emitted when an error occured.
@@ -111,7 +111,6 @@ export class NpLogin extends LitElement {
         const token = await verifySignature(auth);
         const session = await create(token, this.lifetime, this.idletimeout);
         await this.signalSuccess(session);
-        return true;
       } catch (e) {
         await this.signalError(e);
       }

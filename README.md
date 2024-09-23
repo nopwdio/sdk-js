@@ -44,44 +44,55 @@ npm i @nopwdio/sdk-js@latest
 and then:
 
 ```js
-// to import magic link authentication button
-import "@nopwdio/sdk-js@latest/dist/components/np-email-auth.js";
+// to import login with magiclink or Passkeys input element
+import "@nopwdio/sdk-js@latest/dist/components/np-login.js";
 
-// to import Passkeys registration button
+// to import the logout button element
+import "@nopwdio/sdk-js@latest/dist/components/np-logout.js";
+
+// to import the passkeys registration button element
 import "@nopwdio/sdk-js@latest/dist/components/np-passkey-register.js";
-
-// to import Passkeys authentication input field
-import "@nopwdio/sdk-js@latest/dist/components/np-passkey-conditional.js";
 ```
 
-## How to add magic-link authentication?
+## How to add magic-link or Passkeys authentication?
 
 ```html
-<np-email-auth></np-email-auth>
+<np-login></np-login>
 
 <script>
-  const button = document.querySelector("np-email-auth");
-  button.email = "...";
+  const input = document.querySelector("np-login");
 
-  // ...and retrieve the access token by listening the "np:login" event. You're done!
-  button.addEventListner("np:login", (e) => {
+  input.addEventListner("np:login", (e) => {
     // Your are authenticated 🎉
-    const { expires_at, token } = e.detail;
+    const { expires_at, token } = e.target.getSession();
   });
 </script>
 ```
 
-## How to add Passkeys authentication?
+## How to logout?
 
 ```html
-<np-passkey-conditional></np-passkey-conditional>
+<np-logout></np-logout>
 
 <script>
-  const input = document.querySelector("np-passkey-conditional");
+  const button = document.querySelector("np-logout");
 
-  input.addEventListner("np:login", (e) => {
-    // Your are authenticated 🎉
-    const { expires_at, token } = e.detail;
+  input.addEventListner("np:logout", (e) => {
+    // Your are logged out 🎉
+  });
+</script>
+```
+
+## How to create a Passkey?
+
+```html
+<np-passkey-register></np-passkey-register>
+
+<script>
+  const button = document.querySelector("np-passkey-register");
+
+  button.addEventListner("np:register", (e) => {
+    // The passkey has been created 🎉
   });
 </script>
 ```
