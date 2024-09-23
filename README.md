@@ -31,7 +31,7 @@ You can load our web components via CDN or by installing it locally using packag
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-email-auth.js"
+  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-login.js"
 ></script>
 ```
 
@@ -45,13 +45,13 @@ and then:
 
 ```js
 // to import login with magiclink or Passkeys input element
-import "@nopwdio/sdk-js@latest/dist/components/np-login.js";
+import "@nopwdio/sdk-js/dist/components/np-login.js";
 
 // to import the logout button element
-import "@nopwdio/sdk-js@latest/dist/components/np-logout.js";
+import "@nopwdio/sdk-js/dist/components/np-logout.js";
 
 // to import the passkeys registration button element
-import "@nopwdio/sdk-js@latest/dist/components/np-passkey-register.js";
+import "@nopwdio/sdk-js/dist/components/np-passkey-register.js";
 ```
 
 ## How to add magic-link or Passkeys authentication?
