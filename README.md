@@ -29,9 +29,22 @@ You can load our web components via CDN or by installing it locally using packag
 ### using CDN
 
 ```html
+<!-- to import the login with magiclink or Passkeys input element -->
 <script
   type="module"
   src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-login.js"
+></script>
+
+<!-- to import the logout button element -->
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-logout.js"
+></script>
+
+<!-- to import the passkey registration button element -->
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-passkey-register.js"
 ></script>
 ```
 
@@ -44,7 +57,7 @@ npm i @nopwdio/sdk-js@latest
 and then:
 
 ```js
-// to import login with magiclink or Passkeys input element
+// to import the login with magiclink or Passkeys input element
 import "@nopwdio/sdk-js/dist/components/np-login.js";
 
 // to import the logout button element
