@@ -7,6 +7,8 @@ export default css`
 
   a {
     display: flex;
+    flex-grow: 1;
+
     align-items: center;
 
     gap: var(--np-component-icon-gap);
