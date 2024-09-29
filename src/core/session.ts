@@ -123,7 +123,7 @@ export const create = async function (
     };
 
     pSession = Promise.resolve(session);
-
+    signalSessionChanged(session);
     return session;
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
@@ -185,32 +185,68 @@ export const revoke = async function () {
   } finally {
     await deleteItem(db, "sessions", "current");
     pSession = Promise.resolve(null);
+    signalSessionChanged(null);
     //localStorage.removeItem("nopwd:session:activity");
   }
+};
+
+export type SessionStateListener = (session: Session | null) => void;
+
+export const addSessionStateChanged = function (listener: SessionStateListener) {
+  sessionStateListeners.push(listener);
+};
+
+export const removeSessionStateChanged = function (listener: SessionStateListener) {
+  sessionStateListeners.some((value, index) => {
+    if (listener === value) {
+      sessionStateListeners.splice(index, 1);
+      return true;
+    }
+
+    return false;
+  });
+};
+
+const signalSessionChanged = function (session: Session | null) {
+  clearTimeout(signalWhenSessionExpiredTimeoutId);
+
+  if (session) {
+    signalWhenSessionExpiredTimeoutId = window.setTimeout(() => {
+      signalSessionChanged(null);
+    }, session.idle_timeout * 1000);
+  }
+
+  sessionStateListeners.forEach((listener) => {
+    listener(session);
+  });
 };
 
 const refreshSession = async function (): Promise<Session | null> {
   try {
     const now = Math.round(Date.now() / 1000);
-    const db = await getNopwdDb();
-    const session = await getItem<SessionObject>(db, "sessions", "current");
 
-    if (!session) {
+    const db = await getNopwdDb();
+    const storedSession = await getItem<SessionObject>(db, "sessions", "current");
+
+    if (!storedSession) {
       return null;
     }
 
-    if (session.expires_at < now || session.used_at + session.idle_timeout < now) {
+    if (
+      storedSession.expires_at < now ||
+      storedSession.used_at + storedSession.idle_timeout < now
+    ) {
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       return null;
     }
 
-    const challenge = decodeFromSafe64(session.next_challenge);
-    const signature = await sign(challenge, session.private_key);
+    const challenge = decodeFromSafe64(storedSession.next_challenge);
+    const signature = await sign(challenge, storedSession.private_key);
 
     const { access_token, next_challenge } = await endpoint({
       method: "POST",
-      ressource: `/sessions/${session.session_id}/tokens`,
+      ressource: `/sessions/${storedSession.session_id}/tokens`,
       data: {
         signature: bufferTo64Safe(signature),
       },
@@ -218,27 +254,32 @@ const refreshSession = async function (): Promise<Session | null> {
 
     const payload = getPayload(access_token);
 
-    session.next_challenge = next_challenge;
-    session.used_at = payload.iat;
-    await putItem(db, "sessions", session);
+    storedSession.next_challenge = next_challenge;
+    storedSession.used_at = payload.iat;
+    await putItem(db, "sessions", storedSession);
 
-    return {
+    const session = {
       token: access_token,
       token_payload: payload,
 
-      created_at: session.created_at,
-      created_with: session.created_with,
+      created_at: storedSession.created_at,
+      created_with: storedSession.created_with,
 
-      expires_at: session.expires_at,
-      idle_timeout: session.idle_timeout,
-      used_at: session.used_at,
+      expires_at: storedSession.expires_at,
+      idle_timeout: storedSession.idle_timeout,
+      used_at: storedSession.used_at,
 
-      suggest_passkeys: (await isWebauthnSupported()) && !session.created_with.includes("webauthn"),
+      suggest_passkeys:
+        (await isWebauthnSupported()) && !storedSession.created_with.includes("webauthn"),
     };
+
+    signalSessionChanged(session);
+    return session;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
+      signalSessionChanged(null);
       return null;
     }
 
@@ -247,3 +288,5 @@ const refreshSession = async function (): Promise<Session | null> {
 };
 
 let pSession: null | Promise<Session | null> = null;
+let sessionStateListeners: SessionStateListener[] = [];
+let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;

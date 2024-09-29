@@ -11,8 +11,8 @@ import { addSessionStateChanged, removeSessionStateChanged, Session } from "../c
  *
  * @slot - The slotted elements to render if authenticated.
  */
-@customElement("np-if-authenticated")
-export class NpIfAuthenticated extends LitElement {
+@customElement("np-if-unauthenticated")
+export class NpIfUnauthenticated extends LitElement {
   @property({ type: Boolean }) isAuthenticated: boolean | undefined = undefined;
 
   constructor() {
@@ -35,7 +35,7 @@ export class NpIfAuthenticated extends LitElement {
   }
 
   render() {
-    if (this.isAuthenticated) {
+    if (!this.isAuthenticated) {
       return html`<slot></slot>`;
     } else {
       return html``;
@@ -47,6 +47,6 @@ export class NpIfAuthenticated extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "np-if-authenticated": NpIfAuthenticated;
+    "np-if-unauthenticated": NpIfUnauthenticated;
   }
 }
