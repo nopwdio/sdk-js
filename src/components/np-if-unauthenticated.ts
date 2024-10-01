@@ -7,9 +7,9 @@ import styles from "./np-logout.styles.js";
 import { addSessionStateChanged, removeSessionStateChanged, Session } from "../core/session.js";
 
 /**
- * @summary Renders the slotted element only if authenticated.
+ * @summary Renders the slotted element only if unauthenticated.
  *
- * @slot - The slotted elements to render if authenticated.
+ * @slot - The slotted elements to render if unauthenticated.
  */
 @customElement("np-if-unauthenticated")
 export class NpIfUnauthenticated extends LitElement {
@@ -35,11 +35,7 @@ export class NpIfUnauthenticated extends LitElement {
   }
 
   render() {
-    if (!this.isAuthenticated) {
-      return html`<slot></slot>`;
-    } else {
-      return html``;
-    }
+    return this.isAuthenticated ? html`` : html`<slot></slot>`;
   }
 
   static styles = [core, component, styles];

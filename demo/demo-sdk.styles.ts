@@ -6,6 +6,7 @@ export default css`
   np-if-authenticated,
   np-if-unauthenticated {
     display: flex;
+    justify-content: center;
     align-items: center;
     flex-flow: column;
     gap: 1em;

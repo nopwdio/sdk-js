@@ -35,11 +35,7 @@ export class NpIfAuthenticated extends LitElement {
   }
 
   render() {
-    if (this.isAuthenticated) {
-      return html`<slot></slot>`;
-    } else {
-      return html``;
-    }
+    return this.isAuthenticated ? html`<slot></slot>` : html``;
   }
 
   static styles = [core, component, styles];

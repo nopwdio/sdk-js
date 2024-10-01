@@ -44,7 +44,7 @@ export class DemoSdk extends LitElement {
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
         <np-if-unauthenticated>
-          <np-login idletimeout="60"></np-login>
+          <np-login idletimeout="600"></np-login>
         </np-if-unauthenticated>
         <np-if-authenticated>
           <np-passkey-register></np-passkey-register>
