@@ -12,16 +12,21 @@ esbuild.build({
     splitting: true,
     format: "esm",
     entryPoints: [
-        "./src/components/np-passkey-register.ts",
-        "./src/components/np-login.ts",
-        "./src/components/np-logout.ts",
-        "./src/components/np-status.ts",
-        "./src/components/np-status-history.ts",
+      "./src/components/np-login.ts",
+      "./src/components/np-logout.ts",
+
+      "./src/components/np-passkey-register.ts",
+
+      "./src/components/np-if-authenticated.ts",
+      "./src/components/np-if-unauthenticated.ts",
         
-        "./src/core/email.ts",
-        "./src/core/webauthn.ts",
-        "./src/core/token.ts",
-        "./src/core/session.ts",
+      "./src/components/np-status.ts",
+      "./src/components/np-status-history.ts",
+
+      "./src/core/email.ts",
+      "./src/core/webauthn.ts",
+      "./src/core/token.ts",
+      "./src/core/session.ts",
     ],
     outdir: "cdn",
     plugins:[],
