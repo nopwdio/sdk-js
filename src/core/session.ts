@@ -1,8 +1,6 @@
 import { endpoint } from "../internal/api/endpoint.js";
 import {
   AbortError,
-  BadRequestError,
-  ForbiddenError,
   NetworkError,
   NotFoundError,
   TooManyRequestsError,
@@ -15,6 +13,11 @@ import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
 import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
+
+// global variables
+let session: Session | null | undefined = undefined;
+let sessionStateListeners: SessionStateListener[] = [];
+let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;
 
 // Internal indexeddb session object
 interface SessionObject {
@@ -31,6 +34,7 @@ interface SessionObject {
   idle_timeout: number;
 }
 
+// TODO: make SessionObject inherites from Session with challenge and key
 export interface Session {
   created_at: number; // when the session has been created
   created_with: string[];
@@ -43,10 +47,6 @@ export interface Session {
 
   suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser supports it
 }
-
-const getNopwdDb = async function () {
-  return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
-};
 
 /**
  * Create a session and replace the current one if exists.
@@ -108,7 +108,7 @@ export const create = async function (
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
 
-    const session = {
+    session = {
       token: token,
       token_payload: getPayload(token),
 
@@ -122,7 +122,6 @@ export const create = async function (
       suggest_passkeys: (await isWebauthnSupported()) && !created_with.includes("webauthn"),
     };
 
-    pSession = Promise.resolve(session);
     signalSessionChanged(session);
     return session;
   } catch (e: any) {
@@ -135,100 +134,19 @@ export const create = async function (
 };
 
 export const get = async function (): Promise<Session | null> {
-  const now = Math.round(Date.now() / 1000);
-
-  if (pSession === null) {
-    pSession = refreshSession();
-    return pSession;
-  }
-
-  const session = await pSession;
-
-  if (session === null) {
-    return null;
-  }
-
-  if (session.token_payload.exp - 60 <= now) {
-    pSession = refreshSession();
-    return pSession;
-  }
-
-  if (session.token_payload.exp - 5 * 60 <= now) {
-    const prev = pSession;
-    pSession = refreshSession();
-    return prev;
-  }
-
-  return pSession;
-};
-
-export const revoke = async function () {
-  const db = await getNopwdDb();
-
-  try {
-    const currentSession = await getItem<SessionObject>(db, "sessions", "current");
-
-    if (!currentSession) {
-      return;
-    }
-
-    await endpoint({
-      method: "DELETE",
-      ressource: `/sessions/${currentSession.session_id}`,
-    });
-  } catch (e: any) {
-    if (e instanceof NetworkError || e instanceof TooManyRequestsError) {
-      throw e;
-    }
-
-    throw new UnexpectedError(e);
-  } finally {
-    await deleteItem(db, "sessions", "current");
-    pSession = Promise.resolve(null);
-    signalSessionChanged(null);
-    //localStorage.removeItem("nopwd:session:activity");
-  }
-};
-
-export type SessionStateListener = (session: Session | null) => void;
-
-export const addSessionStateChanged = function (listener: SessionStateListener) {
-  sessionStateListeners.push(listener);
-};
-
-export const removeSessionStateChanged = function (listener: SessionStateListener) {
-  sessionStateListeners.some((value, index) => {
-    if (listener === value) {
-      sessionStateListeners.splice(index, 1);
-      return true;
-    }
-
-    return false;
-  });
-};
-
-const signalSessionChanged = function (session: Session | null) {
-  clearTimeout(signalWhenSessionExpiredTimeoutId);
-
-  if (session) {
-    signalWhenSessionExpiredTimeoutId = window.setTimeout(() => {
-      signalSessionChanged(null);
-    }, session.idle_timeout * 1000);
-  }
-
-  sessionStateListeners.forEach((listener) => {
-    listener(session);
-  });
-};
-
-const refreshSession = async function (): Promise<Session | null> {
   try {
     const now = Math.round(Date.now() / 1000);
+
+    if (session && session.token_payload.exp - 60 > now) {
+      signalSessionChanged(session);
+      return session;
+    }
 
     const db = await getNopwdDb();
     const storedSession = await getItem<SessionObject>(db, "sessions", "current");
 
     if (!storedSession) {
+      signalSessionChanged(null);
       return null;
     }
 
@@ -238,6 +156,7 @@ const refreshSession = async function (): Promise<Session | null> {
     ) {
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
+      signalSessionChanged(null);
       return null;
     }
 
@@ -258,7 +177,7 @@ const refreshSession = async function (): Promise<Session | null> {
     storedSession.used_at = payload.iat;
     await putItem(db, "sessions", storedSession);
 
-    const session = {
+    session = {
       token: access_token,
       token_payload: payload,
 
@@ -287,6 +206,72 @@ const refreshSession = async function (): Promise<Session | null> {
   }
 };
 
-let pSession: null | Promise<Session | null> = null;
-let sessionStateListeners: SessionStateListener[] = [];
-let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;
+export const revoke = async function () {
+  const db = await getNopwdDb();
+
+  try {
+    const currentSession = await getItem<SessionObject>(db, "sessions", "current");
+
+    if (!currentSession) {
+      return;
+    }
+
+    await endpoint({
+      method: "DELETE",
+      ressource: `/sessions/${currentSession.session_id}`,
+    });
+  } catch (e: any) {
+    if (e instanceof NetworkError || e instanceof TooManyRequestsError) {
+      throw e;
+    }
+
+    throw new UnexpectedError(e);
+  } finally {
+    await deleteItem(db, "sessions", "current");
+    session = null;
+    signalSessionChanged(null);
+    //localStorage.removeItem("nopwd:session:activity");
+  }
+};
+
+export type SessionStateListener = (session: Session | null | undefined) => void;
+
+export const addSessionStateChanged = function (listener: SessionStateListener) {
+  listener(session);
+  sessionStateListeners.push(listener);
+};
+
+export const removeSessionStateChanged = function (listener: SessionStateListener) {
+  sessionStateListeners.some((value, index) => {
+    if (listener === value) {
+      sessionStateListeners.splice(index, 1);
+      return true;
+    }
+
+    return false;
+  });
+};
+
+const signalSessionChanged = function (session: Session | null) {
+  clearTimeout(signalWhenSessionExpiredTimeoutId);
+
+  if (session) {
+    signalWhenSessionExpiredTimeoutId = window.setTimeout(() => {
+      signalSessionChanged(null);
+    }, session.idle_timeout * 1000);
+  }
+
+  sessionStateListeners.forEach((listener) => {
+    listener(session);
+  });
+};
+
+const getNopwdDb = async function () {
+  return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
+};
+
+const init = async function () {
+  session = await get();
+};
+
+init();

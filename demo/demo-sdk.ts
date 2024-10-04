@@ -6,8 +6,7 @@ import "../src/components/np-logout.js";
 import "../src/components/np-passkey-register.js";
 import "../src/components/np-status.js";
 import "../src/components/np-status-history.js";
-import "../src/components/np-if-authenticated.js";
-import "../src/components/np-if-unauthenticated.js";
+import "../src/components/np-if.js";
 
 import { Session } from "../src/core/session.js";
 
@@ -43,13 +42,14 @@ export class DemoSdk extends LitElement {
     return html`
       <div @np:login=${this.onAuthenticated} @np:logout=${this.onLogout} @np:error=${this.onError}>
         <h1>Demo</h1>
-        <np-if-unauthenticated>
-          <np-login idletimeout="600"></np-login>
-        </np-if-unauthenticated>
-        <np-if-authenticated>
-          <np-passkey-register></np-passkey-register>
-          <np-logout></np-logout>
-        </np-if-authenticated>
+        <np-if>
+          <np-login slot="unauthenticated" idletimeout="600"></np-login>
+          <div slot="authenticated">
+            <np-passkey-register></np-passkey-register>
+            <np-logout></np-logout>
+          </div>
+          <div slot="unknown">unknown</div>
+        </np-if>
         <np-status></np-status>
         <np-status-history></np-status-history>
       </div>

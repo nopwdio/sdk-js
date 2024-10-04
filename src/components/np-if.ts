@@ -9,11 +9,13 @@ import { addSessionStateChanged, removeSessionStateChanged, Session } from "../c
 /**
  * @summary Renders the slotted element only if authenticated.
  *
- * @slot - The slotted elements to render if authenticated.
+ * @slot authenticated - The slotted elements to render when a user is logged in.
+ * @slot unauthenticated - The slotted elements to render when no one is logged in.
+ * @slot unknown - The slotted elements to render when the session verification is in progress.
  */
-@customElement("np-if-authenticated")
-export class NpIfAuthenticated extends LitElement {
-  @property({ type: Boolean }) isAuthenticated: boolean | undefined = undefined;
+@customElement("np-if")
+export class NpIf extends LitElement {
+  @property({ type: Object }) session: Session | null | undefined = undefined;
 
   constructor() {
     super();
@@ -30,19 +32,29 @@ export class NpIfAuthenticated extends LitElement {
     removeSessionStateChanged(this.sessionStateListener);
   }
 
-  private sessionStateListener(session: Session | null) {
-    this.isAuthenticated = session !== null;
+  private sessionStateListener(session: Session | null | undefined) {
+    this.session = session;
+    console.log(this.session);
+    this.requestUpdate();
   }
 
   render() {
-    return this.isAuthenticated ? html`<slot></slot>` : html``;
+    if (this.session) {
+      return html`<slot name="authenticated"></slot>`;
+    }
+
+    if (this.session === null) {
+      return html`<slot name="unauthenticated"></slot>`;
+    }
+
+    return html`<slot name="unknown"></slot>`;
   }
 
-  static styles = [core, component, styles];
+  static styles = [];
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "np-if-authenticated": NpIfAuthenticated;
+    "np-if": NpIf;
   }
 }
