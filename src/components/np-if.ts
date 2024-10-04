@@ -34,8 +34,6 @@ export class NpIf extends LitElement {
 
   private sessionStateListener(session: Session | null | undefined) {
     this.session = session;
-    console.log(this.session);
-    this.requestUpdate();
   }
 
   render() {

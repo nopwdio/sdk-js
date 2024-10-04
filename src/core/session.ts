@@ -271,7 +271,9 @@ const getNopwdDb = async function () {
 };
 
 const init = async function () {
+  console.log("np:initializing");
   session = await get();
+  console.log("np:initialized");
 };
 
 init();
