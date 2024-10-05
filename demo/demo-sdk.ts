@@ -12,6 +12,8 @@ import { Session } from "../src/core/session.js";
 
 import styles from "./demo-sdk.styles.js";
 
+import "./np-test.js";
+
 declare global {
   interface HTMLElementTagNameMap {
     "demo-sdk": DemoSdk;
@@ -47,6 +49,7 @@ export class DemoSdk extends LitElement {
           <div slot="authenticated">
             <np-passkey-register></np-passkey-register>
             <np-logout></np-logout>
+            <np-test>aze</np-test>
           </div>
           <div slot="unknown">unknown</div>
         </np-if>
