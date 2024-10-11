@@ -135,7 +135,6 @@ export const create = async function (
 
 export const get = async function (): Promise<Session | null> {
   try {
-    await initialized;
     const now = Math.round(Date.now() / 1000);
 
     if (session && session.token_payload.exp - 60 > now) {
@@ -271,4 +270,8 @@ const getNopwdDb = async function () {
   return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
 };
 
-const initialized = get();
+const init = async function () {
+  session = await get();
+};
+
+init();
