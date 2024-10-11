@@ -15,7 +15,7 @@ import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
 
 // global variables
-let session: Session | null | undefined = undefined;
+let pSession: Promise<Session | null | undefined> = Promise.resolve(undefined);
 let sessionStateListeners: SessionStateListener[] = [];
 let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;
 
@@ -108,7 +108,7 @@ export const create = async function (
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
 
-    session = {
+    const session = {
       token: token,
       token_payload: getPayload(token),
 
@@ -122,6 +122,7 @@ export const create = async function (
       suggest_passkeys: (await isWebauthnSupported()) && !created_with.includes("webauthn"),
     };
 
+    pSession = Promise.resolve(session);
     signalSessionChanged(session);
     return session;
   } catch (e: any) {
@@ -133,67 +134,24 @@ export const create = async function (
   }
 };
 
-export const get = async function (): Promise<Session | null> {
+export const get = async function (): Promise<Session | null | undefined> {
   try {
     const now = Math.round(Date.now() / 1000);
+    const session = await pSession;
 
     if (session && session.token_payload.exp - 60 > now) {
-      signalSessionChanged(session);
       return session;
     }
 
-    const db = await getNopwdDb();
-    const storedSession = await getItem<SessionObject>(db, "sessions", "current");
-
-    if (!storedSession) {
-      signalSessionChanged(null);
-      return null;
+    if (session && session.token_payload.exp - 120 > now) {
+      pSession = refreshSession();
+      return session;
     }
 
-    if (
-      storedSession.expires_at < now ||
-      storedSession.used_at + storedSession.idle_timeout < now
-    ) {
-      const db = await getNopwdDb();
-      await deleteItem(db, "sessions", "current");
-      signalSessionChanged(null);
-      return null;
-    }
+    pSession = refreshSession();
+    signalSessionChanged(await pSession);
 
-    const challenge = decodeFromSafe64(storedSession.next_challenge);
-    const signature = await sign(challenge, storedSession.private_key);
-
-    const { access_token, next_challenge } = await endpoint({
-      method: "POST",
-      ressource: `/sessions/${storedSession.session_id}/tokens`,
-      data: {
-        signature: bufferTo64Safe(signature),
-      },
-    });
-
-    const payload = getPayload(access_token);
-
-    storedSession.next_challenge = next_challenge;
-    storedSession.used_at = payload.iat;
-    await putItem(db, "sessions", storedSession);
-
-    session = {
-      token: access_token,
-      token_payload: payload,
-
-      created_at: storedSession.created_at,
-      created_with: storedSession.created_with,
-
-      expires_at: storedSession.expires_at,
-      idle_timeout: storedSession.idle_timeout,
-      used_at: storedSession.used_at,
-
-      suggest_passkeys:
-        (await isWebauthnSupported()) && !storedSession.created_with.includes("webauthn"),
-    };
-
-    signalSessionChanged(session);
-    return session;
+    return pSession;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
       const db = await getNopwdDb();
@@ -228,16 +186,79 @@ export const revoke = async function () {
     throw new UnexpectedError(e);
   } finally {
     await deleteItem(db, "sessions", "current");
-    session = null;
+    pSession = Promise.resolve(null);
     signalSessionChanged(null);
-    //localStorage.removeItem("nopwd:session:activity");
+  }
+};
+
+const refreshSession = async function () {
+  try {
+    const now = Math.round(Date.now() / 1000);
+    const db = await getNopwdDb();
+    const storedSession = await getItem<SessionObject>(db, "sessions", "current");
+
+    if (!storedSession) {
+      return null;
+    }
+
+    if (
+      storedSession.expires_at < now ||
+      storedSession.used_at + storedSession.idle_timeout < now
+    ) {
+      const db = await getNopwdDb();
+      await deleteItem(db, "sessions", "current");
+      return null;
+    }
+
+    const challenge = decodeFromSafe64(storedSession.next_challenge);
+    const signature = await sign(challenge, storedSession.private_key);
+
+    const { access_token, next_challenge } = await endpoint({
+      method: "POST",
+      ressource: `/sessions/${storedSession.session_id}/tokens`,
+      data: {
+        signature: bufferTo64Safe(signature),
+      },
+    });
+
+    const payload = getPayload(access_token);
+
+    storedSession.next_challenge = next_challenge;
+    storedSession.used_at = payload.iat;
+    await putItem(db, "sessions", storedSession);
+
+    const session = {
+      token: access_token,
+      token_payload: payload,
+
+      created_at: storedSession.created_at,
+      created_with: storedSession.created_with,
+
+      expires_at: storedSession.expires_at,
+      idle_timeout: storedSession.idle_timeout,
+      used_at: storedSession.used_at,
+
+      suggest_passkeys:
+        (await isWebauthnSupported()) && !storedSession.created_with.includes("webauthn"),
+    };
+
+    return session;
+  } catch (e) {
+    if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
+      const db = await getNopwdDb();
+      await deleteItem(db, "sessions", "current");
+      signalSessionChanged(null);
+      return null;
+    }
+
+    throw e;
   }
 };
 
 export type SessionStateListener = (session: Session | null | undefined) => void;
 
-export const addSessionStateChanged = function (listener: SessionStateListener) {
-  listener(session);
+export const addSessionStateChanged = async function (listener: SessionStateListener) {
+  listener(await pSession);
   sessionStateListeners.push(listener);
 };
 
@@ -252,7 +273,7 @@ export const removeSessionStateChanged = function (listener: SessionStateListene
   });
 };
 
-const signalSessionChanged = function (session: Session | null) {
+const signalSessionChanged = function (session: Session | null | undefined) {
   clearTimeout(signalWhenSessionExpiredTimeoutId);
 
   if (session) {
@@ -271,7 +292,7 @@ const getNopwdDb = async function () {
 };
 
 const init = async function () {
-  session = await get();
+  pSession = get();
 };
 
 init();
