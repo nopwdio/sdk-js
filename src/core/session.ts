@@ -30,7 +30,6 @@ interface SessionObject {
   created_at: number;
   created_with: string[];
   expires_at: number;
-  used_at: number;
   idle_timeout: number;
 }
 
@@ -39,7 +38,6 @@ export interface Session {
   created_at: number; // when the session has been created
   created_with: string[];
   expires_at: number; // the session expiration date
-  used_at: number; // when a new token has been generated
   idle_timeout: number; // the session idle lifetime
 
   token: string;
@@ -99,7 +97,6 @@ export const create = async function (
       session_id,
       next_challenge,
       private_key: keyPair.privateKey,
-      used_at: now,
       created_at: now,
       created_with: created_with,
       expires_at: expires_at,
@@ -150,10 +147,10 @@ export const get = async function (): Promise<Session | null | undefined> {
 
     pSession = refreshSession();
     signalSessionChanged(await pSession);
-
     return pSession;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
+      console.log("get:exception", e);
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       signalSessionChanged(null);
@@ -180,6 +177,7 @@ export const revoke = async function () {
     });
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError) {
+      console.log(e);
       throw e;
     }
 
@@ -198,13 +196,12 @@ const refreshSession = async function () {
     const storedSession = await getItem<SessionObject>(db, "sessions", "current");
 
     if (!storedSession) {
+      console.log("nosession");
       return null;
     }
 
-    if (
-      storedSession.expires_at < now ||
-      storedSession.used_at + storedSession.idle_timeout < now
-    ) {
+    if (storedSession.expires_at < now) {
+      console.log("expired session");
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       return null;
@@ -224,7 +221,6 @@ const refreshSession = async function () {
     const payload = getPayload(access_token);
 
     storedSession.next_challenge = next_challenge;
-    storedSession.used_at = payload.iat;
     await putItem(db, "sessions", storedSession);
 
     const session = {
@@ -236,7 +232,6 @@ const refreshSession = async function () {
 
       expires_at: storedSession.expires_at,
       idle_timeout: storedSession.idle_timeout,
-      used_at: storedSession.used_at,
 
       suggest_passkeys:
         (await isWebauthnSupported()) && !storedSession.created_with.includes("webauthn"),
@@ -245,9 +240,12 @@ const refreshSession = async function () {
     return session;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
+      console.log("refresh", e);
+
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       signalSessionChanged(null);
+
       return null;
     }
 
