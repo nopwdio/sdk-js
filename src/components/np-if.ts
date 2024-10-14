@@ -1,10 +1,13 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { core } from "../internal/styles/core.styles.js";
-import { component } from "../internal/styles/semantic.styles.js";
-import styles from "./np-logout.styles.js";
 
 import { addSessionStateChanged, removeSessionStateChanged, Session } from "../core/session.js";
+
+export enum State {
+  AUTHENTICATED = "authenticated",
+  UNAUTHENTICATED = "unauthenticated",
+  UNKNOWN = "unknown",
+}
 
 /**
  * @summary Renders the slotted element only if authenticated.
@@ -15,7 +18,7 @@ import { addSessionStateChanged, removeSessionStateChanged, Session } from "../c
  */
 @customElement("np-if")
 export class NpIf extends LitElement {
-  @property({ type: Object }) session: Session | null | undefined = undefined;
+  @property() state: State = State.UNKNOWN;
 
   constructor() {
     super();
@@ -33,19 +36,27 @@ export class NpIf extends LitElement {
   }
 
   private sessionStateListener(session: Session | null | undefined) {
-    this.session = session;
+    switch (session) {
+      case undefined:
+        this.state = State.UNKNOWN;
+        break;
+      case null:
+        this.state = State.UNAUTHENTICATED;
+        break;
+      default:
+        this.state = State.AUTHENTICATED;
+    }
   }
 
   render() {
-    if (this.session) {
-      return html`<slot name="authenticated"></slot>`;
+    switch (this.state) {
+      case State.UNKNOWN:
+        return html`<slot name="unknown"></slot>`;
+      case State.AUTHENTICATED:
+        return html`<slot name="authenticated"></slot>`;
+      case State.UNAUTHENTICATED:
+        return html`<slot name="unauthenticated"></slot>`;
     }
-
-    if (this.session === null) {
-      return html`<slot name="unauthenticated"></slot>`;
-    }
-
-    return html`<slot name="unknown"></slot>`;
   }
 
   static styles = [];

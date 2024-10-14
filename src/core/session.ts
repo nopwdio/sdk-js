@@ -136,11 +136,11 @@ export const get = async function (): Promise<Session | null | undefined> {
     const now = Math.round(Date.now() / 1000);
     const session = await pSession;
 
-    if (session && session.token_payload.exp - 60 > now) {
+    if (session && session.token_payload.exp - 300 > now) {
       return session;
     }
 
-    if (session && session.token_payload.exp - 120 > now) {
+    if (session && session.token_payload.exp - 60 > now) {
       pSession = refreshSession();
       return session;
     }
@@ -150,7 +150,6 @@ export const get = async function (): Promise<Session | null | undefined> {
     return pSession;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
-      console.log("get:exception", e);
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       signalSessionChanged(null);
@@ -177,7 +176,6 @@ export const revoke = async function () {
     });
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError) {
-      console.log(e);
       throw e;
     }
 
@@ -196,12 +194,10 @@ const refreshSession = async function () {
     const storedSession = await getItem<SessionObject>(db, "sessions", "current");
 
     if (!storedSession) {
-      console.log("nosession");
       return null;
     }
 
     if (storedSession.expires_at < now) {
-      console.log("expired session");
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       return null;
@@ -240,8 +236,6 @@ const refreshSession = async function () {
     return session;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
-      console.log("refresh", e);
-
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
       signalSessionChanged(null);
