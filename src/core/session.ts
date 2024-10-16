@@ -284,8 +284,10 @@ const getNopwdDb = async function () {
 };
 
 const init = async function () {
+  // init pSession and catch error silently (for server side rendering)
   try {
     pSession = get();
+    await pSession;
   } catch (e) {
     console.log(e);
   }
