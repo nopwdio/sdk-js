@@ -250,8 +250,8 @@ const refreshSession = async function () {
 export type SessionStateListener = (session: Session | null | undefined) => void;
 
 export const addSessionStateChanged = async function (listener: SessionStateListener) {
-  listener(await pSession);
   sessionStateListeners.push(listener);
+  listener(await get());
 };
 
 export const removeSessionStateChanged = function (listener: SessionStateListener) {
@@ -282,15 +282,3 @@ const signalSessionChanged = function (session: Session | null | undefined) {
 const getNopwdDb = async function () {
   return open("nopwd", [{ name: "sessions", id: "id", auto: false }]);
 };
-
-const init = async function () {
-  // init pSession and catch error silently (for server side rendering)
-  try {
-    const session = await get();
-    pSession = Promise.resolve(session);
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-init();
