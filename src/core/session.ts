@@ -284,7 +284,11 @@ const getNopwdDb = async function () {
 };
 
 const init = async function () {
-  pSession = get();
+  try {
+    pSession = get();
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 init();
