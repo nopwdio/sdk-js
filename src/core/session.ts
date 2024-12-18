@@ -8,16 +8,12 @@ import {
 } from "../internal/api/errors.js";
 import { generateKey, sign } from "../internal/crypto/ecdsa.js";
 import { bufferTo64Safe, decodeFromSafe64 } from "../internal/crypto/encoding.js";
+import { Mutex } from "../internal/util/mutex.js";
 
 import { deleteItem, getItem, open, putItem } from "../internal/util/store.js";
 import { UnexpectedError } from "./errors.js";
 import { TokenPayload, getPayload } from "./token.js";
 import { isWebauthnSupported } from "./webauthn.js";
-
-// global variables
-let pSession: Promise<Session | null | undefined> = Promise.resolve(undefined);
-let sessionStateListeners: SessionStateListener[] = [];
-let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;
 
 // Internal indexeddb session object
 interface SessionObject {
@@ -45,6 +41,12 @@ export interface Session {
 
   suggest_passkeys: boolean; // true if the user doesn't use a passkey and the browser supports it
 }
+
+// global variables
+let session: Session | null | undefined = undefined;
+let sessionMutex = new Mutex();
+let sessionStateListeners: SessionStateListener[] = [];
+let signalWhenSessionExpiredTimeoutId: number | undefined = undefined;
 
 /**
  * Create a session and replace the current one if exists.
@@ -90,6 +92,7 @@ export const create = async function (
       },
     });
 
+    console.log("create:next challenge stored:", next_challenge);
     const db = await getNopwdDb();
 
     const sessionObject: SessionObject = {
@@ -105,7 +108,7 @@ export const create = async function (
 
     await putItem<SessionObject>(db, "sessions", sessionObject);
 
-    const session = {
+    session = {
       token: token,
       token_payload: getPayload(token),
 
@@ -114,13 +117,11 @@ export const create = async function (
 
       expires_at: expires_at,
       idle_timeout: idle_timeout,
-      used_at: used_at,
 
       suggest_passkeys: (await isWebauthnSupported()) && !created_with.includes("webauthn"),
     };
 
-    pSession = Promise.resolve(session);
-    signalSessionChanged(session);
+    setSessionState(session);
     return session;
   } catch (e: any) {
     if (e instanceof NetworkError || e instanceof TooManyRequestsError || e instanceof AbortError) {
@@ -132,31 +133,28 @@ export const create = async function (
 };
 
 export const get = async function (): Promise<Session | null | undefined> {
+  await sessionMutex.lock();
   try {
     const now = Math.round(Date.now() / 1000);
-    const session = await pSession;
 
-    if (session && session.token_payload.exp - 300 > now) {
+    if (session && session.token_payload.exp > now + 60) {
       return session;
     }
 
-    if (session && session.token_payload.exp - 60 > now) {
-      pSession = refreshSession();
-      return session;
-    }
-
-    pSession = refreshSession();
-    signalSessionChanged(await pSession);
-    return pSession;
+    session = await refreshSession();
+    setSessionState(session);
+    return session;
   } catch (e) {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
-      signalSessionChanged(null);
+      setSessionState(null);
       return null;
     }
 
     throw e;
+  } finally {
+    sessionMutex.unlock();
   }
 };
 
@@ -182,8 +180,7 @@ export const revoke = async function () {
     throw new UnexpectedError(e);
   } finally {
     await deleteItem(db, "sessions", "current");
-    pSession = Promise.resolve(null);
-    signalSessionChanged(null);
+    setSessionState(null);
   }
 };
 
@@ -238,7 +235,7 @@ const refreshSession = async function () {
     if (e instanceof UnauthorizedError || e instanceof NotFoundError) {
       const db = await getNopwdDb();
       await deleteItem(db, "sessions", "current");
-      signalSessionChanged(null);
+      setSessionState(null);
 
       return null;
     }
@@ -265,17 +262,18 @@ export const removeSessionStateChanged = function (listener: SessionStateListene
   });
 };
 
-const signalSessionChanged = function (session: Session | null | undefined) {
+const setSessionState = function (value: Session | null | undefined) {
+  session = value;
   clearTimeout(signalWhenSessionExpiredTimeoutId);
 
   if (session) {
     signalWhenSessionExpiredTimeoutId = window.setTimeout(() => {
-      signalSessionChanged(null);
+      setSessionState(null);
     }, session.idle_timeout * 1000);
   }
 
   sessionStateListeners.forEach((listener) => {
-    listener(session);
+    listener(value);
   });
 };
 

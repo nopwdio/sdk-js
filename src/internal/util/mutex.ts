@@ -1,15 +1,29 @@
 export class Mutex {
-  private current: Promise<void>;
+  private locked: boolean;
+  private queue: any[];
+
   constructor() {
-    this.current = Promise.resolve();
+    this.locked = false;
+    this.queue = [];
   }
 
-  async lock() {
-    let unlock = () => {};
-    const next = new Promise<void>((resolve) => (unlock = resolve));
-    const rv = this.current.then(() => unlock);
-    this.current = next;
+  lock() {
+    return new Promise((resolve) => {
+      if (!this.locked) {
+        this.locked = true;
+        resolve(undefined);
+      } else {
+        this.queue.push(resolve);
+      }
+    });
+  }
 
-    return rv;
+  unlock() {
+    if (this.queue.length > 0) {
+      const resolve = this.queue.shift();
+      resolve();
+    } else {
+      this.locked = false;
+    }
   }
 }
