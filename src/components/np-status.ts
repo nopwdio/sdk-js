@@ -20,7 +20,8 @@ export enum State {
 /**
  * @summary `np-status` is a custom element that displays the current health status of the nopwd API.
  *
- * @description This component connects to a WebSocket to receive real-time status updates and displays
+ * @description
+ * This component connects to a WebSocket to receive real-time status updates and displays
  * the current state of the nopwd API.
  * The possible states are:
  * - `operational`: All systems are functioning correctly.

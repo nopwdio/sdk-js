@@ -22,6 +22,7 @@ export const component = css`
 
   .icon {
     width: 1em;
+    flex-shrink: 0;
   }
 
   .icon--busy {

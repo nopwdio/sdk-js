@@ -9,7 +9,8 @@ import { component } from "../internal/styles/semantic.styles.js";
 /**
  * @summary `np-status-history` is a custom element that displays the status history of a service.
  *
- * @description This component connects to a WebSocket server to receive real-time updates and renders the status history accordingly.
+ * @description
+ * This component connects to a WebSocket server to receive real-time updates and renders the status history accordingly.
  * It maintains a list of status updates and displays them based on the success and error counts.
  * The possible status indicators are:
  * - `operational`: All systems are functioning correctly.

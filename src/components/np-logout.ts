@@ -18,7 +18,8 @@ export enum State {
 /**
  * @summary `np-logout` is a custom element that handles logging out the authenticated user.
  *
- * @description This component manages the logout process, providing visual feedback during the process.
+ * @description
+ * This component manages the logout process, providing visual feedback during the process.
  * It emits events to notify the parent application when the logout is successful or if an error occurs.
  *
  * @slot - The default slot for the button label.

@@ -26,7 +26,7 @@ export class DemoSdk extends LitElement {
 
   // Event handler for authentication success
   private async onAuthenticated(e: CustomEvent<Session>) {
-    console.log(e.detail);
+    console.log("you are authenticated with session", e.detail);
   }
 
   // Event handler for errors

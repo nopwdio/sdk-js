@@ -25,6 +25,7 @@ import {
 import { create, get, Session } from "../core/session.js";
 
 import { wait } from "../internal/util/wait.js";
+import { NetworkError } from "../core/errors.js";
 
 // Define the different states the component can be in
 export enum State {
@@ -39,7 +40,8 @@ export enum State {
 /**
  * @summary `np-login` is a custom element for user authentication via email link (magic-link) or Passkeys.
  *
- * @description This component manages the authentication process using WebAuthn passkeys or email link authentication.
+ * @description
+ * This component manages the authentication process using WebAuthn passkeys or email link authentication.
  * It handles sending email links, processing callback codes, and verifying passkey challenges.
  * The component emits events for successful login and errors, allowing other parts of the application to
  * respond accordingly. It also provides visual feedback for different states of the authentication process.
@@ -108,14 +110,11 @@ export class NpLogin extends LitElement {
 
   // Method to start conditional UI based on WebAuthn support
   private async startConditionalUI() {
-    if (!(await isWebauthnSupported())) {
-      this.passkeys = false;
-      return false;
-    }
+    this.passkeys = undefined;
+    this.passkeys = await isWebauthnSupported();
 
     for (let i = 0; i <= 20; i++) {
       try {
-        this.passkeys = undefined;
         const { challenge } = await getChallenge();
         this.passkeys = true;
         const auth = await signChallenge(challenge);
@@ -124,7 +123,13 @@ export class NpLogin extends LitElement {
         const session = await create(token, this.lifetime, this.idletimeout);
         await this.signalSuccess(session);
       } catch (e) {
-        await this.signalError(e);
+        console.log(e);
+        if (e instanceof NetworkError) {
+          this.state = undefined;
+          await wait((i + 1) * 1000);
+        } else {
+          await this.signalError(e);
+        }
       }
     }
 

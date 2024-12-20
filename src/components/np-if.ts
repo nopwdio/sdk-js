@@ -10,7 +10,11 @@ export enum State {
 }
 
 /**
- * @summary Renders the slotted element only if authenticated.
+ * @summary Renders different slotted elements based on the authentication state.
+ *
+ * @description
+ * The `np-if` custom element listens to session state changes and renders different slotted elements
+ * depending on whether the user is authenticated, unauthenticated, or if the session verification is in progress.
  *
  * @slot authenticated - The slotted elements to render when a user is logged in.
  * @slot unauthenticated - The slotted elements to render when no one is logged in.

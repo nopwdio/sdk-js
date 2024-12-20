@@ -13,7 +13,6 @@ export const open = function (name: string, tables: Table[]) {
     let request = indexedDB.open(name);
 
     request.onerror = (event: any) => {
-      console.log(event);
       reject(new Error(`can't open db '${name}' - ${event.target.error}`));
     };
 

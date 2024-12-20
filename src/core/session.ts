@@ -92,7 +92,6 @@ export const create = async function (
       },
     });
 
-    console.log("create:next challenge stored:", next_challenge);
     const db = await getNopwdDb();
 
     const sessionObject: SessionObject = {

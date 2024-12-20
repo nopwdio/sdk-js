@@ -30,7 +30,8 @@ export interface RegisterEvent {
 /**
  * @summary `np-passkey-register` is a custom element that facilitates the creation of a passkey for this website.
  *
- * @description This component manages the registration process of a passkey, providing visual feedback during the process.
+ * @description
+ * This component manages the registration process of a passkey, providing visual feedback during the process.
  * It handles user interactions, communicates with the WebAuthn API, and manages the component's state.
  * The component emits events to notify the parent application when the registration is successful or if an error occurs.
  *
