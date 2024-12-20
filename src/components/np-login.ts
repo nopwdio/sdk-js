@@ -1,3 +1,4 @@
+// Import necessary modules and components from lit and local files
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
@@ -25,6 +26,7 @@ import { create, get, Session } from "../core/session.js";
 
 import { wait } from "../internal/util/wait.js";
 
+// Define the different states the component can be in
 export enum State {
   EMAIL_SENDING = "email:link:sending", // sending an email link
   EMAIL_SENT = "email:link:sent", // the email link has been sent
@@ -35,18 +37,24 @@ export enum State {
 }
 
 /**
- * @summary Component allowing user authentication via a link sent by email
- * (magic-link) or Passkeys if an access key has been previously created
- * for this website (using the <np-passkey-register> component).
+ * @summary `np-login` is a custom element for user authentication via email link (magic-link) or Passkeys.
  *
- * @event np:login - Emitted when the session has been created.
- * @event np:error - Emitted when an error occured.
+ * @description This component manages the authentication process using WebAuthn passkeys or email link authentication.
+ * It handles sending email links, processing callback codes, and verifying passkey challenges.
+ * The component emits events for successful login and errors, allowing other parts of the application to
+ * respond accordingly. It also provides visual feedback for different states of the authentication process.
  *
- * @csspart button - The component's submit-button wrapper.
- * @csspart input - The component's email-input wrapper.
- * */
+ * @event np:login - Emitted when the session is successfully created.
+ * @event np:error - Emitted when an error occurs during the authentication process.
+ *
+ * @csspart button - The submit button wrapper.
+ * @csspart input - The email input wrapper.
+ */
 @customElement("np-login")
 export class NpLogin extends LitElement {
+  /**
+   */
+  // Define component properties
   @property({ reflect: true }) state?: State;
   @property({ reflect: true, type: Boolean }) passkeys?: boolean;
   @property({ type: String }) placeholder: string = "Your email";
@@ -56,6 +64,7 @@ export class NpLogin extends LitElement {
 
   @property({ type: String }) value: string = "";
 
+  // Lifecycle method called when the element is added to the document
   async connectedCallback() {
     super.connectedCallback();
 
@@ -63,6 +72,7 @@ export class NpLogin extends LitElement {
     this.handleCallbackIfNeeded();
   }
 
+  // Method to handle login with email
   async loginWithEmail() {
     if ((this.state !== undefined && this.state !== State.EMAIL_SENT) || this.value.length < 3) {
       return;
@@ -78,6 +88,7 @@ export class NpLogin extends LitElement {
     }
   }
 
+  // Method to handle callback if needed
   private async handleCallbackIfNeeded() {
     if (!hasCallbackCode()) {
       return false;
@@ -95,6 +106,7 @@ export class NpLogin extends LitElement {
     }
   }
 
+  // Method to start conditional UI based on WebAuthn support
   private async startConditionalUI() {
     if (!(await isWebauthnSupported())) {
       this.passkeys = false;
@@ -119,10 +131,12 @@ export class NpLogin extends LitElement {
     return false;
   }
 
+  // Method to get the current session
   async getSession() {
     return get();
   }
 
+  // Method to signal successful authentication
   private async signalSuccess(session: Session) {
     this.state = State.AUTHENTICATED;
 
@@ -139,6 +153,7 @@ export class NpLogin extends LitElement {
     this.state = undefined;
   }
 
+  // Method to signal an error
   private async signalError(e: unknown) {
     this.state = State.ERROR;
 
@@ -155,6 +170,7 @@ export class NpLogin extends LitElement {
     this.state = undefined;
   }
 
+  // Method to handle input events
   private async onInput() {
     const input = this.shadowRoot?.querySelector("input");
 
@@ -175,12 +191,14 @@ export class NpLogin extends LitElement {
     }
   }
 
+  // Method to handle key up events
   private onKeyUp(e: KeyboardEvent) {
     if (e.key === "Enter") {
       this.loginWithEmail();
     }
   }
 
+  // Render the component's HTML template
   render() {
     return html`
       <input
@@ -211,9 +229,11 @@ export class NpLogin extends LitElement {
     `;
   }
 
+  // Apply styles to the component
   static styles = [core, component, styles];
 }
 
+// Declare the custom element in the global HTML element tag name map
 declare global {
   interface HTMLElementTagNameMap {
     "np-login": NpLogin;

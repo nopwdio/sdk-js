@@ -5,44 +5,51 @@ import { component } from "../internal/styles/semantic.styles.js";
 import styles from "./np-logout.styles.js";
 import { busy, exclamationCircle, checkCircle } from "../internal/styles/icons.styles.js";
 
-import { AbortError, NoPwdError } from "../internal/api/errors.js";
 import { revoke } from "../core/session.js";
 import { wait } from "../internal/util/wait.js";
 
+// Define the possible states for the component
 export enum State {
-  LOGGINGOUT = "loggingout", // revoking session
-  LOGGEDOUT = "loggedout", // session is revoked
-  ERROR = "error", // something went wrong
+  LOGGINGOUT = "loggingout", // Revoking session
+  LOGGEDOUT = "loggedout", // Session is revoked
+  ERROR = "error", // An error occurred
 }
 
 /**
- * @summary Creates a Passkey associated with the authenticated user.
+ * @summary `np-logout` is a custom element that handles logging out the authenticated user.
  *
- * @slot - The default label.
- * @slot loggingout - revoking the user session.
- * @slot loggedout - session is revoked.
+ * @description This component manages the logout process, providing visual feedback during the process.
+ * It emits events to notify the parent application when the logout is successful or if an error occurs.
  *
- * @event np:logout - Emitted when the the session has been revoked.
- * @event np:error - Emitted when an error occured.
+ * @slot - The default slot for the button label.
+ * @slot loggingout - Content displayed while the user session is being revoked.
+ * @slot loggedout - Content displayed after the session has been successfully revoked.
+ * @slot error - Content displayed when an error occurs during logout.
  *
- * @csspart button - The component's button wrapper.
+ * @event np:logout - Emitted when the session has been successfully revoked.
+ * @event np:error - Emitted when an error occurs during the logout process.
+ *
+ * @csspart button - The component's button element.
  */
 @customElement("np-logout")
 export class NpLogout extends LitElement {
-  /** The component's state. */
+  /** The component's current state. */
   @property({ reflect: true }) state?: State = undefined;
 
-  /** The reset state duration after success or error */
+  /** Duration to reset the state after success or error (in milliseconds). */
   @property({ type: Number }) resetDuration: number = 2000;
 
+  // Lifecycle method called when the component is added to the DOM
   async connectedCallback() {
     super.connectedCallback();
   }
 
+  // Lifecycle method called when the component is removed from the DOM
   async disconnectedCallback() {
     super.disconnectedCallback();
   }
 
+  // Method to handle the logout process
   async logout() {
     if (this.state) {
       return;
@@ -58,10 +65,12 @@ export class NpLogout extends LitElement {
     }
   }
 
+  // Method to handle the click event
   private async onClick() {
     await this.logout();
   }
 
+  // Method to signal a successful logout
   private async signalSuccess() {
     this.state = State.LOGGEDOUT;
 
@@ -77,6 +86,7 @@ export class NpLogout extends LitElement {
     this.state = undefined;
   }
 
+  // Method to signal an error during logout
   private async signalError(e: unknown) {
     this.state = State.ERROR;
 
@@ -93,7 +103,7 @@ export class NpLogout extends LitElement {
     this.state = undefined;
   }
 
-  // Render the UI as a function of component state
+  // Render the UI based on the component's state
   render() {
     return html`<button @click=${this.onClick} part="button">
       ${!this.state
@@ -106,9 +116,11 @@ export class NpLogout extends LitElement {
     </button>`;
   }
 
+  // Define the styles for the component
   static styles = [core, component, styles];
 }
 
+// Register the custom element with the browser
 declare global {
   interface HTMLElementTagNameMap {
     "np-logout": NpLogout;

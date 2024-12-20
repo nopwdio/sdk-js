@@ -18,14 +18,24 @@ export enum State {
 }
 
 /**
- * @summary Nopwd Status component
+ * @summary `np-status` is a custom element that displays the current health status of the nopwd API.
  *
- * @slot - The default label.
- * @slot operational - all services are working.
- * @slot disrupted - some error occured last 24h.
- * @slot down - no success since last hour.
- * @slot nodata - not enough data to get an accurate status.
- * @slot offline - can't connect to the service status.
+ * @description This component connects to a WebSocket to receive real-time status updates and displays
+ * the current state of the nopwd API.
+ * The possible states are:
+ * - `operational`: All systems are functioning correctly.
+ * - `disrupted`: Some errors occurred in the last 24 hours.
+ * - `down`: No successful responses in the last hour.
+ * - `nodata`: Insufficient data to determine status.
+ * - `offline`: Unable to connect to the service.
+ * - `unknown`: The status is currently unknown.
+ *
+ * @slot - The default slot for the label.
+ * @slot operational - Content displayed when all services are operational.
+ * @slot disrupted - Content displayed when some errors occurred in the last 24 hours.
+ * @slot down - Content displayed when no successful responses in the last hour.
+ * @slot nodata - Content displayed when there is insufficient data to determine status.
+ * @slot offline - Content displayed when unable to connect to the service.
  *
  * @csspart link - The component's link wrapper.
  */
@@ -99,16 +109,16 @@ export class NpStatus extends LitElement {
   render() {
     return html`<a href="https://nopwd.io/status" part="link">
       ${this.state === State.DOWN
-        ? html`${warning} Service is down`
+        ? html`${warning} <slot name="down">Service is down</slot>`
         : this.state === State.NODATA
-        ? html`${warning} No data`
+        ? html`${warning} <slot name="nodata">No data</slot>`
         : this.state === State.DISRUPTED
-        ? html`${warning} Some systems disrupted`
+        ? html`${warning} <slot name="disrupted">Some systems disrupted</slot>`
         : this.state === State.OPERATIONAL
-        ? html`${circleSolid} All systems operational`
+        ? html`${circleSolid} <slot name="operational">All systems operational</slot>`
         : this.state === State.OFFLINE
-        ? html`${wifiOff} offline`
-        : html`${loading}<slot>connecting...</slot>`}
+        ? html`${wifiOff} <slot name="offline">Offline</slot>`
+        : html`${loading} <slot>Connecting...</slot>`}
     </a>`;
   }
 

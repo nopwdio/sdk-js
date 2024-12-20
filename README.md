@@ -1,69 +1,68 @@
-# Nopwd javascript sdk
+# Nopwd JavaScript SDK
 
-To all who come here... welcome!
+Welcome to the Nopwd JavaScript SDK repository!
 
-This is the repo for our javascript sdk.
-This repo contains all the source code we use to build our js library.
+This repository contains all the source code used to build our JavaScript library.
 
 ## What is it?
 
-Nopwd is a set of **web components** and API to authenticate your users using email link or Passkeys authentication.
+Nopwd is a set of **web components** and APIs to authenticate your users using email links or Passkeys.
 
-> Nopwd is still in beta. API and components may change and not production ready at this time.
+> Nopwd is still in beta. The API and components may change and are not production-ready at this time.
 
 Check out our [demo website](https://nopwd.rocks) to see it live :)
 
 ## Why?
 
-Authentication is used to be hard for users but also for developers. At Nopwd, we work hard to keep our API simple and minimal 💆.
+Authentication used to be hard for users and developers. At Nopwd, we work hard to keep our API simple and minimal 💆.
 Using Nopwd, you won’t have to:
 
 - give us money (but you can still support us 😅)
 - register your app or website
-- manage any API Key or secrets
+- manage any API keys or secrets
 
 ## How to install it?
 
-You can load our web components via CDN or by installing it locally using package manager such as NPM.
+You can load our web components via CDN or install them locally using a package manager such as NPM.
 
-### using CDN
+### Using CDN
 
 ```html
-<!-- to import the login with magiclink or Passkeys input element -->
+<!-- Import the login with magic link or Passkeys input element -->
 <script
   type="module"
   src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-login.js"
 ></script>
 
-<!-- to import the logout button element -->
+<!-- Import the logout button element -->
 <script
   type="module"
   src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-logout.js"
 ></script>
 
-<!-- to import the passkey registration button element -->
+<!-- Import the Passkey registration button element -->
 <script
   type="module"
   src="https://cdn.jsdelivr.net/npm/@nopwdio/sdk-js@latest/cdn/components/np-passkey-register.js"
 ></script>
 ```
 
-### using NPM
+### Using NPM
 
 ```bash
 npm i @nopwdio/sdk-js@latest
 ```
 
-and then:
+Then:
 
 ```js
-// to import the login with magiclink or Passkeys input element
+// Import the login with magic link or Passkeys input element
 import "@nopwdio/sdk-js/dist/components/np-login.js";
 
-// to import the logout button element
+// Import the logout button element
 import "@nopwdio/sdk-js/dist/components/np-logout.js";
 
-// to import the passkeys registration button element
+// Import the Passkey registration button element
 import "@nopwdio/sdk-js/dist/components/np-passkey-register.js";
 ```
 
@@ -75,8 +74,8 @@ import "@nopwdio/sdk-js/dist/components/np-passkey-register.js";
 <script>
   const input = document.querySelector("np-login");
 
-  input.addEventListner("np:login", (e) => {
-    // Your are authenticated 🎉
+  input.addEventListener("np:login", (e) => {
+    // You are authenticated 🎉
     const { expires_at, token } = e.target.getSession();
   });
 </script>
@@ -90,8 +89,8 @@ import "@nopwdio/sdk-js/dist/components/np-passkey-register.js";
 <script>
   const button = document.querySelector("np-logout");
 
-  input.addEventListner("np:logout", (e) => {
-    // Your are logged out 🎉
+  button.addEventListener("np:logout", (e) => {
+    // You are logged out 🎉
   });
 </script>
 ```
@@ -104,15 +103,15 @@ import "@nopwdio/sdk-js/dist/components/np-passkey-register.js";
 <script>
   const button = document.querySelector("np-passkey-register");
 
-  button.addEventListner("np:register", (e) => {
-    // The passkey has been created 🎉
+  button.addEventListener("np:register", (e) => {
+    // The Passkey has been created 🎉
   });
 </script>
 ```
 
 ## New contributors welcome!
 
-You can create a new Issue puts a problem on our radar or a pull request!
+You can create a new issue to put a problem on our radar or submit a pull request!
 
 ## What's next?
 
