@@ -9,6 +9,18 @@ export default css`
     border-radius: var(--np-component-border-radius);
   }
 
+  :host {
+    --np-component-border-color: var(--np-core-color-grey-m);
+  }
+
+  :host(:hover) {
+    --np-component-border-color: var(--np-core-color-grey-s);
+  }
+
+  :host(:focus) {
+    --np-component-border-color: var(--np-core-color-grey-xs);
+  }
+
   :host([state="authenticated"]) {
     --np-component-border-color: var(--np-core-color-green-m);
   }
@@ -38,6 +50,6 @@ export default css`
   }
 
   button {
-    color: var(--np-component-border-color);
+    color: var(--np-component-text-color);
   }
 `;
