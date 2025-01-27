@@ -66,12 +66,20 @@ export class NpLogin extends LitElement {
 
   @property({ type: String }) value: string = "";
 
+  private abortConditianal?: AbortController;
+
   // Lifecycle method called when the element is added to the document
   async connectedCallback() {
     super.connectedCallback();
 
     this.startConditionalUI();
     this.handleCallbackIfNeeded();
+  }
+
+  async disconnectedCallback() {
+    super.disconnectedCallback();
+    this.abortConditianal?.abort();
+    this.abortConditianal = undefined;
   }
 
   // Method to handle login with email
@@ -112,12 +120,14 @@ export class NpLogin extends LitElement {
   private async startConditionalUI() {
     this.passkeys = undefined;
     this.passkeys = await isWebauthnSupported();
+    this.abortConditianal?.abort();
+    this.abortConditianal = new AbortController();
 
     for (let i = 0; i <= 20; i++) {
       try {
         const { challenge } = await getChallenge();
         this.passkeys = true;
-        const auth = await signChallenge(challenge);
+        const auth = await signChallenge(challenge, this.abortConditianal.signal);
         this.state = State.PASSKEYS_VERIFYING;
         const token = await verifySignature(auth);
         const session = await create(token, this.lifetime, this.idletimeout);
